@@ -1,0 +1,17 @@
+node_modules/
+dist/
+data/
+backups/
+uploads/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.sql.zip
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+release/
