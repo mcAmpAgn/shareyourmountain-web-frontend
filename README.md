@@ -103,3 +103,8 @@ One Node instance with a persistent local disk can host the API and SQLite later
 CI installs from the lockfile, runs synthetic-fixture tests and builds React without the private archive. Its artifact includes the client build and server source. Deployment still requires dependencies, configuration and a separately imported database.
 
 See [architecture](docs/ARCHITECTURE.md), [verification](docs/VERIFICATION.md), [legacy audit](docs/LEGACY_AUDIT.md), [original proposal](docs/MVP_DATABASE_PROPOSAL.md), and [attributions](docs/ATTRIBUTIONS.md).
+
+
+## GitHub pipeline
+
+See [CI documentation](docs/CI.md) for the Windows/Linux test matrix, dependency audit, verified runtime artifact, and production-only smoke test. Run `npm run package:release` after building to create the ignored release directory; `npm run test:release` verifies an isolated copy without using your database.

@@ -1,28 +1,97 @@
-name: React and SQLite MVP checks
+name: CI
+
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    name: Verify / ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 22
+          - os: windows-latest
+            node: 22
+          - os: ubuntu-latest
+            node: 24
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22'
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
           cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - uses: actions/upload-artifact@v4
+          cache-dependency-path: package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check formatting
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 22
+        run: npm run format:check
+      - name: Check TypeScript
+        run: npm run typecheck
+      - name: Run database and HTTP tests
+        run: npm test
+
+  audit:
+    name: Audit runtime dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          name: shareyourmountain-application
-          path: |
-            dist/client/
-            src/server/
-            src/shared/
-            package.json
-            package-lock.json
-            tsconfig.json
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm audit --omit=dev --audit-level=high
+
+  release:
+    name: Build and verify application package
+    needs: [verify, audit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Build React and check types
+        run: npm run build
+      - name: Assemble allowlisted application files and checksums
+        run: npm run package:release
+      - name: Test package using only production dependencies
+        run: npm run test:release
+      - name: Upload verified application
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: shareyourmountain-${{ github.sha }}
+          path: release/
+          include-hidden-files: true # Only the explicit release allowlist, including .env.example.
+          if-no-files-found: error
+          retention-days: 14

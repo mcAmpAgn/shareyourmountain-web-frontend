@@ -12,7 +12,10 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:import": "tsx scripts/import-legacy.ts",
     "db:backup": "tsx scripts/backup.ts",
-    "format": "prettier --write src scripts tests index.html vite.config.ts tsconfig.json package.json .github"
+    "format": "prettier --write src scripts tests index.html vite.config.ts tsconfig.json package.json .github",
+    "format:check": "prettier --check src scripts tests index.html vite.config.ts tsconfig.json package.json .github",
+    "package:release": "tsx scripts/package-release.ts",
+    "test:release": "tsx scripts/smoke-release.ts"
   },
   "engines": {
     "node": ">=22"
