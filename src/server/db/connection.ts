@@ -23,14 +23,19 @@ export function migrate(db: AppDatabase) {
   for (const name of readdirSync(dir)
     .filter((n) => n.endsWith('.sql'))
     .sort()) {
-    const sql = readFileSync(path.join(dir, name), 'utf8'),
+    const sql = readFileSync(path.join(dir, name), 'utf8').replace(/\r\n/g, '\n'),
       hash = createHash('sha256').update(sql).digest('hex');
     const previous = db.sqlite
       .prepare('SELECT sha256 FROM schema_migrations WHERE name=?')
       .get(name) as { sha256: string } | undefined;
     if (previous) {
-      if (previous.sha256 !== hash)
-        throw new Error(`Previously applied migration changed: ${name}`);
+      if (previous.sha256 !== hash) {
+        // Accept an older checksum only when the SQL differs solely in line endings.
+        const crlfHash = createHash('sha256').update(sql.replace(/\n/g, '\r\n')).digest('hex');
+        if (previous.sha256 !== crlfHash)
+          throw new Error(`Previously applied migration changed: ${name}`);
+        db.sqlite.prepare('UPDATE schema_migrations SET sha256=? WHERE name=?').run(hash, name);
+      }
       continue;
     }
     db.sqlite.transaction(() => {

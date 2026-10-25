@@ -13,6 +13,32 @@ import { createAdventureRepository } from '../src/server/repositories/adventure-
 import { createAdventureService } from '../src/server/services/adventure-service.js';
 import { getTableConfig } from 'drizzle-orm/sqlite-core';
 import * as typedSchema from '../src/server/db/schema.js';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+test('migration checksums tolerate line-ending conversion but still reject changed SQL', () => {
+  const db = fixtureDatabase();
+  try {
+    const source = readFileSync(
+      new URL('../src/server/db/migrations/001_catalog.sql', import.meta.url),
+      'utf8',
+    ).replace(/\r\n/g, '\n');
+    const legacy = createHash('sha256').update(source.replace(/\n/g, '\r\n')).digest('hex');
+    db.sqlite
+      .prepare('UPDATE schema_migrations SET sha256=? WHERE name=?')
+      .run(legacy, '001_catalog.sql');
+    migrate(db);
+    const current = db.sqlite
+      .prepare('SELECT sha256 FROM schema_migrations WHERE name=?')
+      .get('001_catalog.sql') as { sha256: string };
+    assert.equal(current.sha256, createHash('sha256').update(source).digest('hex'));
+    db.sqlite
+      .prepare('UPDATE schema_migrations SET sha256=? WHERE name=?')
+      .run('modified-schema', '001_catalog.sql');
+    assert.throws(() => migrate(db), /Previously applied migration changed/);
+  } finally {
+    db.sqlite.close();
+  }
+});
 test('typed column mappings remain synchronized with the canonical SQLite migrations', () => {
   const db = fixtureDatabase();
   try {
@@ -35,6 +61,7 @@ test('dump parser handles escaped text, doubled quotes, BIT booleans, NULL and e
     [2, "L'oro, (neve);", 1, 1.5],
   ]);
   assert.throws(() => parseTuples("(1,'broken"));
+  assert.deepEqual(parseTuples("(1,'b0',b'0')"), [[1, 'b0', 0]]);
 });
 test('migrations and import are idempotent and preserve language variants of rock types', () => {
   const db = fixtureDatabase();
