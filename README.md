@@ -1,50 +1,105 @@
-# Share Your Mountain
+# Share Your Mountain — React + SQLite MVP
 
-A new Italian-first, responsive frontend for the original Share Your Mountain project. Uses the supplied white wordmark, original alpine photography and a real, explicitly historical catalog imported from the legacy repository.
+An Italian-first discovery application with React, a Node.js API and SQLite. The December 2017 archive imports **12,311 mountains and 3,041 routes**. Normal discovery shows **12,266 active mountains and 3,028 active routes**.
 
-## Run locally
+## Run on Windows
 
-Requires Node.js 22 or later. No dependencies or installation required.
+Requires Node.js 22 or later. From this repository:
 
-```sh
+```powershell
+npm ci
+npm run db:import -- "C:\Users\DE\Downloads\mcampagn83_symcore.28122017.sql.zip"
+npm run dev
+```
+
+Open **http://127.0.0.1:8787**. React and the API share one server. This delivery creates the imported database locally at `data/shareyourmountain.sqlite`; a fresh checkout needs the import command. Database files and the private source backup are not committed.
+
+The importer supports `.sql` and `.sql.zip`. For explicit options:
+
+```powershell
+node --import tsx scripts/import-legacy.ts --source "C:\path\backup.sql.zip" --snapshot 2017-12-28
+```
+
+Reimporting the same archive is safe and does nothing. A different source is refused when catalog data exists. Use a new `DATABASE_PATH` for a different import; existing catalogs and adventures are never automatically deleted.
+
+## Build, check and maintain
+
+```powershell
+npm test
+npm run build
+npm run db:backup
+```
+
+For production-mode local serving:
+
+```powershell
+$env:NODE_ENV = "production"
 npm start
 ```
 
-Open the printed local URL (default `http://127.0.0.1:8787`). Set `PORT` to use another port. The server binds to loopback for local development.
+Without `NODE_ENV=production`, `npm start` uses Vite development middleware. `HOST`, `PORT`, and `DATABASE_PATH` can be set in the shell. `.env.example` documents them; `.env` files are not automatically loaded. `npm run typecheck`, `npm run format`, and `npm run db:migrate` are also available.
 
-```sh
-npm test
-npm run build
+Backups use SQLite's consistent backup API and go to ignored `backups/`. Restore to a new database path with the app stopped, preserving the existing database first. Do not copy only an active WAL database's main file.
+
+## Responsibilities
+
+```text
+src/client/components/      UI surfaces, cards, filters and dialogs
+src/client/hooks/           Request cancellation, URL state, adventure mutations
+src/client/lib/             HTTP client and presentation formatting
+src/client/App.tsx          Application composition
+src/server/http/            Routes, input validation and local-profile boundary
+src/server/services/        Application rules and detail/source assembly
+src/server/repositories/    Prepared catalog queries and typed persistence
+src/server/db/              Connection, Drizzle mappings and SQL migrations
+src/server/import/          SQL text parser and transactional public-data import
+src/shared/                 Explicit API contracts, without server dependencies
+scripts/                    Migration, import and consistent-backup entry points
+tests/                      Synthetic fixtures, database and HTTP integration tests
 ```
 
-`dist/` is a static production site. Deploy its contents on any static web host. It needs no server-side runtime, API keys or credentials. This delivery is committed source code; no hosted production deployment is configured.
+Components do not issue SQL or know legacy database fields. Hooks own network/navigation state. Routes validate requests before invoking services. Repositories own database access. Drizzle handles typed adventure persistence; prepared SQLite queries handle catalog joins, FTS and bulk import. SQL migrations are the canonical schema. Update typed mappings when adding a new migration; never modify an already-applied migration.
 
 ## Included
 
-- Responsive discovery homepage, destination exploration and source/project information.
-- Search across 1,337 actual legacy peaks and 381 actual legacy routes, with accent-insensitive multiword matching and suggestions.
-- Mountain/route/activity filters, mountain ranges, minimum elevation, alphabetical/elevation ordering and pagination.
-- Detail dialogs, original source links, related routes and OpenStreetMap links where coordinates exist.
-- Personal saved adventures and completion tracking in this browser's local storage, with storage-error handling and a local-data deletion control.
-- Shareable detail links and filter query strings.
-- Keyboard-accessible native dialogs, labeled controls, reduced-motion support, lazy-loaded imagery and error/empty states.
+- Responsive homepage with the original branding and photography.
+- Server-side Unicode/diacritic-aware token-prefix search, geography/activity/elevation filters, sorting and stable pagination.
+- Database-driven activity choices, including trekking.
+- Details with descriptions, source reports, historical images, related routes, parking and track links when available.
+- Map links clearly distinguish route, summit and parking positions. Missing data remains missing.
+- Persistent planned/completed adventures, notes, duplicate prevention and timestamps.
+- Shareable detail URLs, filter query strings, loading/error/empty states and native accessible dialogs.
+- Bounding-box mountain API, capped at 1,000 records, ready for a future interactive map. The current UI uses OpenStreetMap links and does not draw route geometry.
 
-## Historical data and production boundary
+FTS token-prefix search differs from arbitrary middle-of-word matching. Grades and activity classifications are historical records, not current route advice.
 
-The catalog is the public **2015-07-31** snapshot at legacy commit `f71f235228f015e20fd0e1487ce597b3de5cab9c`. It is not a current production database or a verified guide to current mountain conditions. Missing coordinates, grades and measurements remain missing. The 2015 route snapshot includes Alpinismo, Vie Lunghe and Vie Ferrate; other activities in later code have no imported route records and are not advertised as available filters.
+## Data and privacy
 
-Accounts, social sign-in, public uploads, community publishing, synchronized lists, live weather and a live interactive map backend are not connected. Saved adventures work locally; maps open OpenStreetMap at the recorded location. Photo labels distinguish illustrative landscapes. External historical source URLs are preserved, including their original HTTP protocol; their current availability is unverified.
+The importer parses source text and never executes MySQL statements. It retains 21 public source tables plus a rock identity helper: SQLite needs a unique parent for the original multilingual `(id, language)` rock records. Original catalog IDs remain stable. Legacy identity, profile/history/statistics records and author `user_id` fields are excluded.
 
-See [legacy audit](docs/LEGACY_AUDIT.md), [attributions](docs/ATTRIBUTIONS.md), and [verification](docs/VERIFICATION.md).
+The complete import is transactional. Invalid coordinate pairs and zero route metrics become nullable served values; the originals and reasons are stored in `import_issues`. Low historical elevations are flagged rather than silently corrected. The real import produced 3,253 audit entries. Checksums, counts, snapshot date and import time are retained in `import_batches`. Foreign-key and integrity checks validate the result.
 
-## Refresh the catalog reproducibly
+Private accounts/wishlists, empty accommodation/translation/detail tables, old procedures and derived social/reporting views are not recreated. External historical media, report links and track files are not independently verified or downloaded by the importer.
 
-Clone the legacy repository separately and check out the documented commit. Never copy its secrets, application settings, account tables or complete SQL dumps into this frontend.
+Personal features use a new **local development profile**. `/api/me` requires a loopback connection and localhost Host; mutations require a matching Origin. This is not online authentication. A public deployment needs real identity and authorization before exposing personal features. Earlier demo browser-local saves remain untouched; they are not automatically uploaded.
 
-```sh
-node scripts/import-legacy.mjs /absolute/path/to/legacy
-npm test
-npm run build
-```
+## API
 
-The importer reads explicit public tables and writes an allowlisted `public/data/catalog.json`. SQL is parsed as text and never executed. Source associations are resolved against their original source domains. The current catalog remains historical until replaced with an authorized, verified current data export.
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/health`, `/api/stats`, `/api/filters` | Readiness, provenance/counts and filter choices |
+| `GET /api/catalog`, `/api/mountains`, `/api/routes` | Paginated discovery |
+| `GET /api/mountains/:id`, `/api/routes/:id` | Detail DTOs |
+| `GET /api/map/mountains?bbox=west,south,east,north` | Valid active summit positions |
+| `GET/POST /api/me/adventures` | Local saved targets |
+| `PATCH/DELETE /api/me/adventures/:id` | Notes, completion and removal |
+
+Listing filters: `q`, `kind`, `activityId`, `countryId`, `regionId`, `rangeId`, `mountainId`, `minElevation`, `sort=name|elevation`, `page`, `pageSize` (maximum 50). Invalid/unknown input returns 400, unavailable records 404, and rejected local-profile access 403. Errors do not expose SQL or request bodies.
+
+## Deployment boundary
+
+One Node instance with a persistent local disk can host the API and SQLite later. Static hosting alone cannot run the app. Keep databases, dumps and uploads outside Git and the served directory. Multi-instance writers, public authentication, contributions/uploads, live weather and offline synchronization are separate future work.
+
+CI installs from the lockfile, runs synthetic-fixture tests and builds React without the private archive. Its artifact includes the client build and server source. Deployment still requires dependencies, configuration and a separately imported database.
+
+See [architecture](docs/ARCHITECTURE.md), [verification](docs/VERIFICATION.md), [legacy audit](docs/LEGACY_AUDIT.md), [original proposal](docs/MVP_DATABASE_PROPOSAL.md), and [attributions](docs/ATTRIBUTIONS.md).

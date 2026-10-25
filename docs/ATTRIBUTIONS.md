@@ -8,7 +8,7 @@
 - `alps.jpg`: legacy `SYM.WebApp/Content/images/bg/photo-6-low.jpg`.
 - `climbing.jpg`: legacy `SYM.WebApp/Content/images/bg/photo-11-min.jpg`.
 - Favicon: simple geometric mountain drawn for this frontend.
-- Public catalog: legacy `SYM.WebApp/dumps/Dump20150731`, explicit public field subset. Sources and provenance are retained in `public/data/catalog.json` and displayed in detail sheets.
+- Public catalog: the user-supplied December 2017 SQL archive, imported through an explicit public-field allowlist into the local SQLite database. Sources and import provenance are retained there; private records are excluded.
 
 Legacy repository: https://gitlab.com/campagna.marcello/shareyourmountain at commit `f71f235228f015e20fd0e1487ce597b3de5cab9c`.
 

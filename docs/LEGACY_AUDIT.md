@@ -1,3 +1,5 @@
+This is the original source audit recorded before the React/SQLite implementation. See [ARCHITECTURE.md](ARCHITECTURE.md) and the root README for the current implementation.
+
 # Legacy project audit and migration map
 
 Source: https://gitlab.com/campagna.marcello/shareyourmountain

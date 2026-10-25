@@ -1,0 +1,115 @@
+.notice {
+  background: #edf0df;
+  border: 1px solid #d3ddbf;
+  border-radius: 5px;
+  padding: 14px 18px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+.filters input,
+.activity-filter-label select {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 10px;
+  font-size: 12px;
+  min-width: 0;
+  width: 100%;
+  color: var(--ink);
+}
+.filters label {
+  min-width: 180px;
+}
+.activity-filter-label {
+  display: block;
+  max-width: 300px;
+  font-size: 11px;
+  margin-bottom: 24px;
+}
+.activity-filter-label select {
+  display: block;
+  margin-top: 8px;
+}
+.notes-form {
+  padding-bottom: 20px;
+  display: grid;
+  gap: 12px;
+}
+.notes-form label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.notes-form textarea {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: white;
+  color: var(--ink);
+}
+.notes-form button {
+  justify-self: start;
+}
+.adventure-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: white;
+  padding: 12px;
+  border-radius: 4px;
+}
+.saved-name {
+  overflow-wrap: anywhere;
+}
+.saved-row {
+  flex-wrap: wrap;
+}
+.saved-row .saved-name {
+  flex-basis: 100%;
+}
+.archive-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.archive-gallery figure {
+  margin: 0;
+  overflow: hidden;
+}
+.archive-gallery img {
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.archive-gallery figcaption {
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.source-link {
+  color: var(--forest);
+  text-decoration: underline;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .filters label {
+    min-width: 100%;
+  }
+  .archive-gallery {
+    grid-template-columns: 1fr;
+  }
+  .saved-row .secondary-button {
+    padding: 9px;
+  }
+  .cards[aria-busy='true'] {
+    min-height: 260px;
+  }
+}

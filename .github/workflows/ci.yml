@@ -1,4 +1,4 @@
-name: Frontend checks
+name: React and SQLite MVP checks
 on:
   push:
   pull_request:
@@ -12,9 +12,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+      - run: npm ci
       - run: npm test
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
-          name: shareyourmountain-static-site
-          path: dist/
+          name: shareyourmountain-application
+          path: |
+            dist/client/
+            src/server/
+            src/shared/
+            package.json
+            package-lock.json
+            tsconfig.json

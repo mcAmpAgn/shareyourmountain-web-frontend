@@ -1,7 +1,15 @@
 node_modules/
 dist/
-.DS_Store
-*.log
+data/
+backups/
+uploads/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.sql.zip
 .env
 .env.*
 !.env.example
+*.log
+.DS_Store

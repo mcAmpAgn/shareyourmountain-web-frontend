@@ -1,24 +1,13 @@
-# Verification
+# React / API / SQLite MVP verification
 
-Verified locally on 2026-10-25 using Node.js 22 and the Codex in-app browser.
+Strict TypeScript checking and the Vite production build pass. Database and real HTTP integration tests pass with synthetic fixtures; CI needs no private archive.
 
-## Automated checks
+Tests cover escaped SQL values and BIT booleans, migration/import idempotency, transaction rollback, multilingual rock identities, private-data exclusion, coordinate and measurement normalization, Unicode search, combined filters, pagination, source URLs, map semantics, saved-target uniqueness, completion/notes and persistence across reopening SQLite. HTTP tests exercise malformed input, missing records, map bounds, origin protection and adventure CRUD.
 
-`npm test`: 7 tests pass. Checks historical record counts, peak values, source URL reconstruction, unique IDs, accent-insensitive text search, combined activity/range/elevation filters, sorting, missing coordinates and metrics, public field allowlisting, output escaping and malformed/unavailable local storage.
+The supplied December archive imported all 21 public source tables: 12,311 mountains, 3,041 routes, 3,122 source references, 39,022 cities and 488 image records. Active discovery counts are 12,266 mountains and 3,028 routes. The importer recorded 3,253 audit entries. Foreign-key and integrity checks pass. Private identities and wishlists were excluded.
 
-`npm run build`: passes and emits a static `dist/` directory.
+Browser checks used the production React build with the actual imported database in the narrow in-app browser pane. Saved Cervino, marked it completed, added a note, reloaded and confirmed persistence; removed the temporary test save afterward. Trekking discovery returned 2,064 active routes. Combining trekking and a 2,500 m minimum elevation returned 934 results. Original branding, responsive controls, filters, cards and dialogs were inspected.
 
-`node --check public/app.js`: passes.
+The installed dependency audit reported zero known vulnerabilities after updating Drizzle to its patched version. Dependencies are captured in the lockfile.
 
-## Browser checks
-
-- Responsive homepage inspected at the available narrow preview width (approximately 521 pixels), including hero, branding, stacked search, cards, destination images and footer.
-- Opened Cervino detail, checked archived elevation, country and coordinate map link.
-- Saved Cervino, marked it completed, reloaded the page and verified the saved completion persisted.
-- Removed the test save and confirmed the list was empty again.
-- Searched Resegone and checked the 6 matching results.
-- Opened Resegone detail and its six related route entries.
-- Opened Bastionata - via Bonatti and verified its historical source link and available measurements.
-- Selected the via ferrata filter and combined it with minimum altitude; the historical result remained consistent.
-
-No live legacy backend, production deployment, external route-site availability, user accounts or cross-device synchronization was tested. Desktop CSS is implemented but no wide desktop screenshot was obtained in the available in-app pane. The GitHub workflow runs tests/builds after push; its remote result must be checked separately.
+Remote media/reports and current mountain conditions are not independently verified. No public deployment, online authentication or wide desktop screenshot is claimed. Remote CI results are distinct from these local checks.
