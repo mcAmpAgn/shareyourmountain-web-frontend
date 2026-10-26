@@ -13,3 +13,7 @@ The installed dependency audit reported zero known vulnerabilities after updatin
 Remote media/reports and current mountain conditions are not independently verified. No public deployment, online authentication or wide desktop screenshot is claimed. Remote CI results are distinct from these local checks.
 
 Final repository verification: 11 tests pass, including typed-schema synchronization and migration checksum compatibility across LF/CRLF checkouts. Strict type checking and the production build pass. The production-mode application was opened directly from C:\GIT\shareyourmountain-web-frontend and its actual Cervino detail data was verified. A consistent SQLite backup was also created successfully during verification.
+
+## Workers and D1 migration
+
+The compiled Worker passes an integration test against local D1: migrations, public-only export/import, full-text search, invalid inputs, JSON API fallbacks, built assets, replay rejection, signed Access JWT verification, audience and expiry rejection, same-origin enforcement, duplicate saves, two-user isolation and personal CRUD. The existing 12 Node tests and isolated production package smoke test also pass. Both deployment artifacts build successfully. A full historical catalog import into local D1 reconciled 12,311 mountains, 3,041 routes and 15,294 active items, with zero profiles and zero adventures. The Cloudflare feature branch passed all six GitHub CI jobs. Remote provisioning, real-domain Access policy and live deployment require Cloudflare account sign-in and remain unverified.

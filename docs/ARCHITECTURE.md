@@ -1,10 +1,10 @@
 # Architecture decisions
 
-React renders product DTOs and collects user actions. Express validates HTTP requests. Services assemble details and enforce application rules. Repositories own prepared catalog queries and typed Drizzle adventure persistence. Only the server opens SQLite. Shared contracts import no backend implementation.
+React renders product DTOs and collects user actions. Express (local) and Fetch routes (Workers) validate HTTP requests. `src/core` holds shared asynchronous catalog queries, validation and application rules behind a small SQL port. Runtime adapters implement that port with better-sqlite3 or D1. Drizzle adventure repositories implement the same persistence contract for each runtime. Shared API contracts import no backend implementation.
 
 The frontend is organized by surfaces rather than by individual DOM fragments. Reusable dialogs, search, filters, cards, detail and adventure components each own their presentation. Hooks own request cancellation, URL navigation and mutations; aborted searches cannot replace newer results. App composes these surfaces without querying the database.
 
-Development uses Vite middleware and production serves the compiled React files from the API process. Both use one origin, avoiding unnecessary CORS configuration and separate-server orchestration.
+Local development uses Vite middleware. Node production mode serves compiled React from Express; Cloudflare production serves static assets from the Worker with D1 bindings. Both use one origin. The Worker bundle does not import the native SQLite driver or Node server. D1 has its own ordered migrations; local SQLite migration checksums remain unchanged.
 
 SQL migrations are versioned and checksummed. They are the canonical database schema; Drizzle mappings describe the typed application columns. Applied migrations cannot be silently edited. WAL, busy timeout and foreign-key enforcement are set when opening a connection.
 
@@ -18,4 +18,6 @@ FTS5 normalizes Unicode/diacritics and performs token-prefix searches. User inpu
 
 Adventures have exactly one target, profile-scoped unique target indexes, planned/completed state, notes and timestamps. Persistence is verified across reopening a real SQLite file. The local profile requires loopback and localhost Host; mutation Origin must match. This deliberately does not substitute for real authentication on a public deployment.
 
-Runtime databases, original backups, generated backups, dependencies and build output are ignored. CI uses synthetic public fixtures. Authentication, uploads, social feeds, live weather and distributed/offline synchronization remain outside this local MVP.
+Workers validate Access JWT signatures, issuer, audience, expiry and subject, derive a profile from the verified issuer/subject, and scope every personal query to it. Online saves are disabled without Access configuration. Same-origin mutations and bounded JSON bodies protect the API boundary. The public catalog never selects a local development profile. The D1 seed allowlists public data, batches statements within size limits, rebuilds FTS and rejects replay through an import marker.
+
+Runtime databases, original backups, generated exports, dependencies and build output are ignored. CI uses synthetic public fixtures and runs the compiled Worker against real local D1, including signed-token verification and two-user isolation. Uploads, social feeds, live weather and distributed/offline synchronization remain outside this MVP. See [Cloudflare setup](CLOUDFLARE.md).
