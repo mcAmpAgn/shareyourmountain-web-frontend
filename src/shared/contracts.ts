@@ -1,4 +1,8 @@
 export type ItemKind = 'mountain' | 'route';
+export interface ProfileCapabilities {
+  profileMode: 'local' | 'access' | 'disabled';
+  signInUrl: string | null;
+}
 export interface CatalogItem {
   key: string;
   id: number;

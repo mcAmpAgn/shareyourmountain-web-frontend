@@ -12,10 +12,18 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:import": "tsx scripts/import-legacy.ts",
     "db:backup": "tsx scripts/backup.ts",
-    "format": "prettier --write src scripts tests index.html vite.config.ts tsconfig.json package.json .github",
-    "format:check": "prettier --check src scripts tests index.html vite.config.ts tsconfig.json package.json .github",
+    "format": "prettier --write src scripts tests index.html vite.config.ts tsconfig.json package.json .github wrangler.jsonc",
+    "format:check": "prettier --check src scripts tests index.html vite.config.ts tsconfig.json package.json .github wrangler.jsonc",
     "package:release": "tsx scripts/package-release.ts",
-    "test:release": "tsx scripts/smoke-release.ts"
+    "test:release": "tsx scripts/smoke-release.ts",
+    "dev:worker": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build:worker": "wrangler deploy --dry-run --outdir dist/worker",
+    "test:worker": "tsx --test tests/worker/*.test.ts",
+    "d1:migrate:local": "wrangler d1 migrations apply DB --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "d1:export": "tsx scripts/export-d1.ts",
+    "package:worker": "tsx scripts/package-worker.ts"
   },
   "engines": {
     "node": ">=22"
@@ -25,6 +33,7 @@
     "drizzle-orm": "^0.45.4",
     "express": "^5.1.0",
     "fflate": "^0.8.2",
+    "jose": "^6.2.13",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tsx": "^4.20.6",
@@ -32,12 +41,18 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261025.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.3",
     "@types/node": "^22.18.12",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "miniflare": "5.20261019.2-beta",
     "prettier": "^3.9.10",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.152.0"
+  },
+  "overrides": {
+    "undici": "^7.30.1"
   }
 }

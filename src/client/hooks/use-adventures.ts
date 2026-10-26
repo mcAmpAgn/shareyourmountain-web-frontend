@@ -1,12 +1,31 @@
 import { useState } from 'react';
-import { api } from '../lib/api';
+import { api, ApiError } from '../lib/api';
 import { useResource } from './use-resource';
 import type { Adventure, CatalogItem, AdventureUpdate } from '../../shared/contracts';
 export function useAdventures() {
-  const resource = useResource((signal) => api.adventures(signal), [], true),
+  const resource = useResource(
+      async (signal) => {
+        const capabilities = await api.capabilities(signal);
+        if (capabilities.profileMode === 'disabled')
+          return { ...capabilities, authenticated: false, items: [] as Adventure[] };
+        try {
+          return { ...capabilities, authenticated: true, items: await api.adventures(signal) };
+        } catch (error) {
+          if (
+            capabilities.profileMode === 'access' &&
+            (error instanceof TypeError ||
+              (error instanceof ApiError && [401, 403].includes(error.status)))
+          )
+            return { ...capabilities, authenticated: false, items: [] as Adventure[] };
+          throw error;
+        }
+      },
+      [],
+      true,
+    ),
     [pending, setPending] = useState(false),
     [mutationError, setMutationError] = useState<string | null>(null);
-  const items = resource.data ?? [];
+  const items = resource.data?.items ?? [];
   async function mutate(action: () => Promise<unknown>) {
     if (pending) return;
     setPending(true);
@@ -24,6 +43,10 @@ export function useAdventures() {
     items,
     loading: resource.loading,
     pending,
+    canSave: resource.data?.authenticated ?? false,
+    profileMode: resource.data?.profileMode ?? 'disabled',
+    needsSignIn: resource.data?.profileMode === 'access' && !resource.data.authenticated,
+    signInUrl: resource.data?.signInUrl ?? null,
     error: mutationError ?? resource.error,
     retry: resource.retry,
     saved: (item: CatalogItem) => items.find((entry) => entry.item.key === item.key),

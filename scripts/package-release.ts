@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 export const releaseEntries = [
   'dist/client',
   'src/server',
+  'src/core',
   'src/shared',
   'scripts/migrate.ts',
   'scripts/import-legacy.ts',

@@ -20,6 +20,7 @@ export class ApiError extends Error {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch('/api' + path, {
     ...options,
+    redirect: 'error',
     headers: {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers,
@@ -38,6 +39,8 @@ export const queryString = (query: CatalogQuery) => {
   return params.toString();
 };
 export const api = {
+  capabilities: (signal?: AbortSignal) =>
+    request<import('../../shared/contracts').ProfileCapabilities>('/capabilities', { signal }),
   stats: (signal?: AbortSignal) => request<Stats>('/stats', { signal }),
   filters: (signal?: AbortSignal) => request<Filters>('/filters', { signal }),
   catalog: (query: CatalogQuery, signal?: AbortSignal) =>

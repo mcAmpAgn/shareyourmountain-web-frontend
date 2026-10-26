@@ -1,0 +1,4 @@
+# Access identifiers are configured for the online Worker; they are not login tokens.
+# Copy to .dev.vars only if you want to test real Access sessions locally.
+# ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
+# ACCESS_AUD=your-application-audience

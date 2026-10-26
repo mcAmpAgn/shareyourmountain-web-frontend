@@ -132,7 +132,7 @@ export function CatalogSection({
                 key={item.key}
                 item={item}
                 saved={!!adventures.saved(item)}
-                pending={adventures.pending || adventures.loading}
+                pending={adventures.pending || adventures.loading || !adventures.canSave}
                 onSave={() => void adventures.toggle(item)}
                 onOpen={() => onOpen(item)}
               />

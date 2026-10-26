@@ -129,9 +129,9 @@ export function App() {
             ) : (
               <>
                 <p>
-                  Il profilo locale salva le tue mete, le note e lo stato di completamento nel
-                  database di questo computer, tramite il servizio locale. Non è un account online e
-                  non sincronizza i dati tra dispositivi.
+                  {adventures.profileMode === 'local'
+                    ? 'Il profilo locale salva le tue mete, le note e lo stato di completamento nel database di questo computer, tramite il servizio locale. Non è un account online e non sincronizza i dati tra dispositivi.'
+                    : 'Il tuo profilo personale conserva le mete, le note e lo stato di completamento in un database online protetto. Il salvataggio richiede il tuo accesso personale.'}
                 </p>
                 <p>
                   Puoi rimuovere singole avventure dalla tua lista. Non usiamo tracciatori, cookie
