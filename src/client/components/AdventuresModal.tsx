@@ -17,8 +17,22 @@ export function AdventuresModal({
         <p className="eyebrow">IL TUO PROSSIMO ORIZZONTE</p>
         <h2 id="saved-title">Le mie avventure</h2>
         <p className="muted">
-          Il tuo profilo locale. Preferiti e note sono salvati nel database su questo computer.
+          {state.profileMode === 'local'
+            ? 'Il tuo profilo locale. Preferiti e note sono salvati nel database su questo computer.'
+            : 'Le tue avventure e note sono legate al tuo accesso personale.'}
         </p>
+        {state.needsSignIn && state.signInUrl && (
+          <div className="empty-state">
+            <h3>Le tue prossime mete, tutte insieme.</h3>
+            <p>Accedi per salvare avventure e note nel tuo profilo.</p>
+            <a className="button" href={state.signInUrl}>
+              Accedi per salvare ↗
+            </a>
+          </div>
+        )}
+        {state.profileMode === 'disabled' && !state.loading && (
+          <p>Puoi esplorare l’archivio. Il salvataggio online non è ancora disponibile.</p>
+        )}
         {state.error && (
           <div className="notice" role="alert">
             {state.error}
@@ -33,7 +47,7 @@ export function AdventuresModal({
           state.items.map((entry) => (
             <AdventureRow key={entry.id} entry={entry} state={state} onOpen={onOpen} />
           ))
-        ) : (
+        ) : state.canSave ? (
           <div className="empty-state">
             <h3>Ogni avventura comincia con un’idea.</h3>
             <p>
@@ -51,7 +65,7 @@ export function AdventuresModal({
               Trova la tua montagna ↗
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </Modal>
   );

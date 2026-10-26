@@ -119,14 +119,14 @@ test('private identity and catalog author columns are absent from the MVP databa
     db.sqlite.close();
   }
 });
-test('normalization keeps absent coordinates and measurements unknown and audits originals', () => {
+test('normalization keeps absent coordinates and measurements unknown and audits originals', async () => {
   const db = fixtureDatabase();
   try {
     const service = createCatalogService(createCatalogRepository(db));
-    const peak = service.detail('mountain', 11)!;
+    const peak = (await service.detail('mountain', 11))!;
     assert.equal(peak.latitude, null);
     assert.equal(peak.longitude, null);
-    const route = service.detail('route', 1)!;
+    const route = (await service.detail('route', 1))!;
     assert.equal(route.mountainId, null);
     assert.equal(route.lengthM, null);
     assert.equal(route.latitude, null);
@@ -138,29 +138,35 @@ test('normalization keeps absent coordinates and measurements unknown and audits
     db.sqlite.close();
   }
 });
-test('queries filter active records, normalize accents, combine filters and clamp pagination', () => {
+test('queries filter active records, normalize accents, combine filters and clamp pagination', async () => {
   const db = fixtureDatabase();
   try {
     const r = createCatalogRepository(db);
-    assert.equal(r.stats().mountains, 2);
-    assert.equal(r.stats().routes, 2);
-    assert.equal(r.list({ q: 'Tasch' }).items[0].id, 11);
-    assert.equal(r.list({ q: 'Cervino Pennine' }).items[0].id, 10);
-    assert.equal(r.list({ kind: 'route', activityId: 7, countryId: 1, regionId: 1 }).total, 1);
-    assert.equal(r.list({ kind: 'mountain', minElevation: 4480 }).total, 1);
-    assert.equal(r.list({ page: 100, pageSize: 2 }).page, 2);
-    assert.equal(r.list({ q: "' OR 1=1; --" }).total, 0);
-    assert.equal(r.get('mountain', 12), null);
+    assert.equal((await r.stats()).mountains, 2);
+    assert.equal((await r.stats()).routes, 2);
+    assert.equal((await r.list({ q: 'Tasch' })).items[0].id, 11);
+    assert.equal((await r.list({ q: 'Cervino Pennine' })).items[0].id, 10);
+    assert.equal(
+      (await r.list({ kind: 'route', activityId: 7, countryId: 1, regionId: 1 })).total,
+      1,
+    );
+    assert.equal((await r.list({ kind: 'mountain', minElevation: 4480 })).total, 1);
+    assert.equal((await r.list({ page: 100, pageSize: 2 })).page, 2);
+    assert.equal((await r.list({ q: "' OR 1=1; --" })).total, 0);
+    assert.equal(await r.get('mountain', 12), null);
   } finally {
     db.sqlite.close();
   }
 });
-test('sources resolve relative paths safely and route maps distinguish the mountain', () => {
+test('sources resolve relative paths safely and route maps distinguish the mountain', async () => {
   const db = fixtureDatabase();
   try {
     const service = createCatalogService(createCatalogRepository(db));
-    assert.equal(service.detail('route', 1)!.sources[0].url, 'https://example.org/report.html');
-    const route = service.detail('route', 2)!;
+    assert.equal(
+      (await service.detail('route', 1))!.sources[0].url,
+      'https://example.org/report.html',
+    );
+    const route = (await service.detail('route', 2))!;
     assert.equal(route.latitude, null);
     assert.deepEqual(route.mountainLocation, { latitude: 45.9764, longitude: 7.65833 });
     assert.equal(safeURL('javascript:alert(1)'), null);
@@ -178,15 +184,15 @@ test('adventures are unique, enforce one target, persist across reopening, and u
       createAdventureRepository(db),
       createCatalogRepository(db),
     );
-    const first = service.create({ kind: 'mountain', targetId: 10 });
-    assert.equal(service.create({ kind: 'mountain', targetId: 10 }).id, first.id);
-    assert.throws(() => service.create({ kind: 'mountain', targetId: 12 }));
+    const first = await service.create({ kind: 'mountain', targetId: 10 });
+    assert.equal((await service.create({ kind: 'mountain', targetId: 10 })).id, first.id);
+    await assert.rejects(() => service.create({ kind: 'mountain', targetId: 12 }));
     assert.throws(() =>
       db.sqlite
         .prepare("INSERT INTO adventures VALUES ('bad','local',10,1,'planned',NULL,'','now','now')")
         .run(),
     );
-    service.update(first.id, { status: 'completed', notes: 'Portare acqua' });
+    await service.update(first.id, { status: 'completed', notes: 'Portare acqua' });
     db.sqlite.close();
     db = openDatabase(filename);
     migrate(db);
@@ -194,13 +200,13 @@ test('adventures are unique, enforce one target, persist across reopening, and u
       createAdventureRepository(db),
       createCatalogRepository(db),
     );
-    assert.equal(reopened.list()[0].status, 'completed');
-    assert.equal(reopened.list()[0].notes, 'Portare acqua');
-    assert.ok(reopened.list()[0].completedAt);
-    reopened.update(first.id, { status: 'planned' });
-    assert.equal(reopened.list()[0].completedAt, null);
-    reopened.remove(first.id);
-    assert.equal(reopened.list().length, 0);
+    assert.equal((await reopened.list())[0].status, 'completed');
+    assert.equal((await reopened.list())[0].notes, 'Portare acqua');
+    assert.ok((await reopened.list())[0].completedAt);
+    await reopened.update(first.id, { status: 'planned' });
+    assert.equal((await reopened.list())[0].completedAt, null);
+    await reopened.remove(first.id);
+    assert.equal((await reopened.list()).length, 0);
   } finally {
     db.sqlite.close();
     await rm(dir, { recursive: true, force: true });

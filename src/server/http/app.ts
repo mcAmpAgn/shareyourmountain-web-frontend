@@ -46,50 +46,51 @@ export function createApp(db: AppDatabase) {
   const repository = createCatalogRepository(db),
     catalog = createCatalogService(repository),
     adventures = createAdventureService(createAdventureRepository(db), repository);
-  app.get('/api/health', (_req, res) =>
-    res.json({ ok: true, initialized: catalog.stats().totalMountains > 0 }),
+  app.get('/api/capabilities', (_req, res) => res.json({ profileMode: 'local', signInUrl: null }));
+  app.get('/api/health', async (_req, res) =>
+    res.json({ ok: true, initialized: (await catalog.stats()).totalMountains > 0 }),
   );
-  app.get('/api/stats', (_req, res) => res.json(catalog.stats()));
-  app.get('/api/filters', (_req, res) => res.json(catalog.filters()));
-  app.get('/api/catalog', (req, res) =>
-    res.json(catalog.list(validation.catalogQuery.parse(req.query))),
+  app.get('/api/stats', async (_req, res) => res.json(await catalog.stats()));
+  app.get('/api/filters', async (_req, res) => res.json(await catalog.filters()));
+  app.get('/api/catalog', async (req, res) =>
+    res.json(await catalog.list(validation.catalogQuery.parse(req.query))),
   );
   for (const [path, kind] of [
     ['mountains', 'mountain'],
     ['routes', 'route'],
   ] as const) {
-    app.get('/api/' + path, (req, res) => {
+    app.get('/api/' + path, async (req, res) => {
       const query = validation.catalogQuery.parse(req.query);
-      res.json(catalog.list({ ...query, kind }));
+      res.json(await catalog.list({ ...query, kind }));
     });
-    app.get('/api/' + path + '/:id', (req, res) => {
-      const result = catalog.detail(kind, validation.catalogId.parse(req.params.id));
+    app.get('/api/' + path + '/:id', async (req, res) => {
+      const result = await catalog.detail(kind, validation.catalogId.parse(req.params.id));
       if (!result) throw new ApplicationError(404, 'Questa scheda non è disponibile.');
       res.json(result);
     });
   }
-  app.get('/api/map/mountains', (req, res) => {
+  app.get('/api/map/mountains', async (req, res) => {
     const query = validation.mapQuery.parse(req.query);
-    res.json({ items: catalog.map(query.bbox, query.minElevation), limit: 1000 });
+    res.json({ items: await catalog.map(query.bbox, query.minElevation), limit: 1000 });
   });
   app.use('/api/me', localProfileOnly);
-  app.get('/api/me/adventures', (_req, res) => res.json(adventures.list()));
-  app.post('/api/me/adventures', (req, res) =>
-    res.status(201).json(adventures.create(validation.adventureCreate.parse(req.body))),
+  app.get('/api/me/adventures', async (_req, res) => res.json(await adventures.list()));
+  app.post('/api/me/adventures', async (req, res) =>
+    res.status(201).json(await adventures.create(validation.adventureCreate.parse(req.body))),
   );
-  app.patch('/api/me/adventures/:id', (req, res) =>
+  app.patch('/api/me/adventures/:id', async (req, res) =>
     res.json(
-      adventures.update(
+      await adventures.update(
         validation.adventureId.parse(req.params.id),
         validation.adventureUpdate.parse(req.body),
       ),
     ),
   );
-  app.delete('/api/me/adventures/:id', (req, res) => {
-    adventures.remove(validation.adventureId.parse(req.params.id));
+  app.delete('/api/me/adventures/:id', async (req, res) => {
+    await adventures.remove(validation.adventureId.parse(req.params.id));
     res.status(204).end();
   });
-  app.use('/api', (_req, res) => res.status(404).json({ error: 'Endpoint non trovato.' }));
+  app.use('/api', async (_req, res) => res.status(404).json({ error: 'Endpoint non trovato.' }));
   return app;
 }
 export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {

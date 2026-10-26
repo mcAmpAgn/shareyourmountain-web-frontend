@@ -1,6 +1,6 @@
-# Share Your Mountain — React + SQLite MVP
+# Share Your Mountain — React, Workers and D1
 
-An Italian-first discovery application with React, a Node.js API and SQLite. The December 2017 archive imports **12,311 mountains and 3,041 routes**. Normal discovery shows **12,266 active mountains and 3,028 active routes**.
+An Italian-first discovery application with React, a Cloudflare Workers/D1 production backend and a Node.js/SQLite local backend. The December 2017 archive imports **12,311 mountains and 3,041 routes**. Normal discovery shows **12,266 active mountains and 3,028 active routes**. See [Cloudflare deployment](docs/CLOUDFLARE.md) for database provisioning, catalog export and Access-protected online saves. R2 is deferred until uploads are needed.
 
 ## Run on Windows
 
@@ -48,6 +48,8 @@ src/client/components/      UI surfaces, cards, filters and dialogs
 src/client/hooks/           Request cancellation, URL state, adventure mutations
 src/client/lib/             HTTP client and presentation formatting
 src/client/App.tsx          Application composition
+src/core/                   Shared async catalog queries, validation and application rules
+src/worker/                 Fetch routes, D1 adapters and verified Access identity
 src/server/http/            Routes, input validation and local-profile boundary
 src/server/services/        Application rules and detail/source assembly
 src/server/repositories/    Prepared catalog queries and typed persistence
@@ -81,18 +83,18 @@ The complete import is transactional. Invalid coordinate pairs and zero route me
 
 Private accounts/wishlists, empty accommodation/translation/detail tables, old procedures and derived social/reporting views are not recreated. External historical media, report links and track files are not independently verified or downloaded by the importer.
 
-Personal features use a new **local development profile**. `/api/me` requires a loopback connection and localhost Host; mutations require a matching Origin. This is not online authentication. A public deployment needs real identity and authorization before exposing personal features. Earlier demo browser-local saves remain untouched; they are not automatically uploaded.
+The Node backend uses a **local development profile**, requiring loopback and localhost Host; mutations require a matching Origin. The production Worker requires verified **Cloudflare Access** sign-in and isolates each user's saves. Online saves stay disabled until Access is configured. The D1 export excludes every local profile, adventure and note. Earlier demo browser-local saves remain untouched; they are not automatically uploaded.
 
 ## API
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/health`, `/api/stats`, `/api/filters` | Readiness, provenance/counts and filter choices |
-| `GET /api/catalog`, `/api/mountains`, `/api/routes` | Paginated discovery |
-| `GET /api/mountains/:id`, `/api/routes/:id` | Detail DTOs |
-| `GET /api/map/mountains?bbox=west,south,east,north` | Valid active summit positions |
-| `GET/POST /api/me/adventures` | Local saved targets |
-| `PATCH/DELETE /api/me/adventures/:id` | Notes, completion and removal |
+| Endpoint                                            | Purpose                                         |
+| --------------------------------------------------- | ----------------------------------------------- |
+| `GET /api/health`, `/api/stats`, `/api/filters`     | Readiness, provenance/counts and filter choices |
+| `GET /api/catalog`, `/api/mountains`, `/api/routes` | Paginated discovery                             |
+| `GET /api/mountains/:id`, `/api/routes/:id`         | Detail DTOs                                     |
+| `GET /api/map/mountains?bbox=west,south,east,north` | Valid active summit positions                   |
+| `GET/POST /api/me/adventures`                       | Local saved targets                             |
+| `PATCH/DELETE /api/me/adventures/:id`               | Notes, completion and removal                   |
 
 Listing filters: `q`, `kind`, `activityId`, `countryId`, `regionId`, `rangeId`, `mountainId`, `minElevation`, `sort=name|elevation`, `page`, `pageSize` (maximum 50). Invalid/unknown input returns 400, unavailable records 404, and rejected local-profile access 403. Errors do not expose SQL or request bodies.
 
@@ -103,7 +105,6 @@ One Node instance with a persistent local disk can host the API and SQLite later
 CI installs from the lockfile, runs synthetic-fixture tests and builds React without the private archive. Its artifact includes the client build and server source. Deployment still requires dependencies, configuration and a separately imported database.
 
 See [architecture](docs/ARCHITECTURE.md), [verification](docs/VERIFICATION.md), [legacy audit](docs/LEGACY_AUDIT.md), [original proposal](docs/MVP_DATABASE_PROPOSAL.md), and [attributions](docs/ATTRIBUTIONS.md).
-
 
 ## GitHub pipeline
 

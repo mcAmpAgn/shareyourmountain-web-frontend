@@ -14,6 +14,7 @@ concurrency:
 
 env:
   CI: 'true'
+  WRANGLER_SEND_METRICS: 'false'
 
 jobs:
   verify:
@@ -65,9 +66,38 @@ jobs:
           package-manager-cache: false
       - run: npm audit --omit=dev --audit-level=high
 
+  worker:
+    name: Workers and D1 integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Compile Worker and static assets without publishing
+        run: npm run build:worker
+      - name: Test D1 import, search, Access signatures and profile isolation
+        run: npm run test:worker
+      - name: Package compiled Cloudflare deployment
+        run: npm run package:worker
+      - name: Upload Cloudflare application
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: shareyourmountain-cloudflare-${{ github.sha }}
+          path: release-cloudflare/
+          if-no-files-found: error
+          retention-days: 14
+
   release:
     name: Build and verify application package
-    needs: [verify, audit]
+    needs: [verify, audit, worker]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
