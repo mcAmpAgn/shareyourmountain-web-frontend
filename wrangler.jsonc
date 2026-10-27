@@ -15,6 +15,7 @@
     {
       "binding": "DB",
       "database_name": "shareyourmountain-catalog",
+      "database_id": "0f8962d6-54ef-4660-a9b6-3a950b5f822e",
       "migrations_dir": "d1/migrations",
     },
   ],
