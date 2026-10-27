@@ -88,6 +88,8 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
           return json({ ok: true, initialized: (await catalog.stats()).totalMountains > 0 });
         if (method === 'GET' && path === '/api/stats') return json(await catalog.stats());
         if (method === 'GET' && path === '/api/filters') return json(await catalog.filters());
+        if (method === 'GET' && path === '/api/suggestions')
+          return json(await catalog.suggestions(validation.suggestionQuery.parse(query)));
         if (method === 'GET' && ['/api/catalog', '/api/mountains', '/api/routes'].includes(path)) {
           const input = validation.catalogQuery.parse(query);
           return json(

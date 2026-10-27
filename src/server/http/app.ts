@@ -54,6 +54,9 @@ export function createApp(db: AppDatabase) {
   );
   app.get('/api/stats', async (_req, res) => res.json(await catalog.stats()));
   app.get('/api/filters', async (_req, res) => res.json(await catalog.filters()));
+  app.get('/api/suggestions', async (req, res) =>
+    res.json(await catalog.suggestions(validation.suggestionQuery.parse(req.query))),
+  );
   app.get('/api/catalog', async (req, res) =>
     res.json(await catalog.list(validation.catalogQuery.parse(req.query))),
   );

@@ -14,6 +14,7 @@ export function safeURL(value: string | null | undefined, base?: string | null):
 export function createCatalogService(repository: CatalogRepository) {
   return {
     list: repository.list,
+    suggestions: repository.suggestions,
     stats: repository.stats,
     filters: repository.filters,
     map: repository.map,

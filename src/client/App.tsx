@@ -36,7 +36,7 @@ export function App() {
       </a>
       <Header count={adventures.items.length} onAdventures={() => setShowAdventures(true)} />
       <main id="main">
-        <Hero filters={meta.data?.filters ?? null} onSearch={search} />
+        <Hero filters={meta.data?.filters ?? null} onSearch={search} onOpen={open} />
         <div className="intro-strip wrapper">
           <p>
             La tua passione. <strong>Un orizzonte senza confini.</strong>

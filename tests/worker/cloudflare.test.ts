@@ -71,6 +71,14 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
     assert.equal(((await response.json()) as { initialized: boolean }).initialized, true);
     const listed = await mf.dispatchFetch('https://example.test/api/catalog?q=Tasch');
     assert.equal(((await listed.json()) as { total: number }).total, 1);
+    const suggestions = (await mf
+      .dispatchFetch('https://example.test/api/suggestions?q=Cerv')
+      .then((r) => r.json())) as { items: { key: string }[] };
+    assert.deepEqual(
+      suggestions.items.map((item) => item.key),
+      ['m-10', 'r-2'],
+    );
+    assert.equal((await mf.dispatchFetch('https://example.test/api/suggestions?q=C')).status, 400);
     const route = (await mf
       .dispatchFetch('https://example.test/api/routes/2')
       .then((r) => r.json())) as { latitude: unknown; mountainLocation: unknown };
