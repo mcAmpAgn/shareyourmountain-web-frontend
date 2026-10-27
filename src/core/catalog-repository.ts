@@ -6,6 +6,7 @@ import type {
   Filters,
   Stats,
   ItemKind,
+  SuggestionQuery,
 } from '../shared/contracts.js';
 export interface CatalogRow {
   key: string;
@@ -45,7 +46,7 @@ export function itemDTO(row: CatalogRow): CatalogItem {
   };
 }
 export function createCatalogRepository(database: SqlDatabase) {
-  async function list(query: CatalogQuery): Promise<CatalogPage> {
+  async function list(query: CatalogQuery, namesOnly = false): Promise<CatalogPage> {
     const where = ['i.active=1'],
       params: (string | number)[] = [];
     if (query.q) {
@@ -53,7 +54,8 @@ export function createCatalogRepository(database: SqlDatabase) {
       if (!words.length)
         return { items: [], total: 0, page: 1, pageSize: query.pageSize ?? 12, pages: 1 };
       where.push('i.key IN (SELECT entity_key FROM catalog_search WHERE catalog_search MATCH ?)');
-      params.push(words.map((w) => '"' + w + '"*').join(' AND '));
+      const match = words.map((w) => '"' + w + '"*').join(' AND ');
+      params.push(namesOnly ? 'name : (' + match + ')' : match);
     }
     for (const [key, column] of [
       ['kind', 'kind'],
@@ -152,6 +154,9 @@ export function createCatalogRepository(database: SqlDatabase) {
   }
   return {
     list,
+    suggestions: async (query: SuggestionQuery) => ({
+      items: (await list({ ...query, page: 1, pageSize: 6 }, true)).items,
+    }),
     get,
     stats,
     filters,

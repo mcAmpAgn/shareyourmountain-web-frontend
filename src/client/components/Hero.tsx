@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import type { Filters } from '../../shared/contracts';
+import type { Filters, CatalogItem } from '../../shared/contracts';
+import { SearchAutocomplete } from './SearchAutocomplete';
 export function Hero({
   filters,
   onSearch,
+  onOpen,
 }: {
   filters: Filters | null;
   onSearch: (query: string, activity: string) => void;
+  onOpen: (item: CatalogItem) => void;
 }) {
   const [query, setQuery] = useState(''),
     [activity, setActivity] = useState('');
@@ -35,22 +38,13 @@ export function Hero({
             onSearch(query.trim(), activity);
           }}
         >
-          <label className="search-location">
-            <span className="field-label">DOVE VUOI ANDARE?</span>
-            <span className="input-line">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="10.5" cy="10.5" r="6.5" />
-                <path d="m16 16 5 5" />
-              </svg>
-              <input
-                type="search"
-                value={query}
-                maxLength={120}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Una cima, un itinerario, una zona…"
-              />
-            </span>
-          </label>
+          <SearchAutocomplete
+            value={query}
+            activity={activity}
+            onChange={setQuery}
+            onSelect={onOpen}
+            onSearch={() => onSearch(query.trim(), activity)}
+          />
           <label className="search-activity">
             <span className="field-label">SEGUI LA TUA PASSIONE</span>
             <select

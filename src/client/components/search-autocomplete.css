@@ -1,0 +1,108 @@
+.autocomplete {
+  position: relative;
+}
+.autocomplete-panel {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 0;
+  width: max(100%, 420px);
+  max-width: calc(100vw - 48px);
+  background: white;
+  border: 1px solid #dce3d8;
+  border-radius: 8px;
+  box-shadow: 0 14px 40px #0f302d33;
+  color: var(--ink);
+  text-align: left;
+  z-index: 30;
+  overflow: hidden;
+}
+.autocomplete-status {
+  padding: 12px 16px;
+  margin: 0;
+  background: #f5f7f1;
+  color: #627168;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.autocomplete-panel ul {
+  padding: 4px 0;
+  margin: 0;
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.autocomplete-panel li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #edf0e8;
+}
+.autocomplete-panel li[aria-selected='true'] {
+  background: #eaf0e2;
+  box-shadow: inset 3px 0 #597648;
+}
+.suggestion-kind {
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  width: 64px;
+  flex-shrink: 0;
+  color: #5a7352;
+}
+.suggestion-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.suggestion-name small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #6a776e;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+.autocomplete-all {
+  width: 100%;
+  border: 0;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  color: var(--forest);
+  background: #f5f7f1;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.autocomplete-all:hover {
+  background: #eaf0e2;
+}
+.autocomplete input:focus-visible {
+  outline: 2px solid #7b9767;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+@media (max-width: 600px) {
+  .autocomplete-panel {
+    top: calc(100% + 8px);
+    width: 100%;
+    max-width: 100%;
+  }
+  .autocomplete-panel ul {
+    max-height: 240px;
+  }
+  .autocomplete-panel li {
+    gap: 8px;
+    padding: 12px;
+  }
+  .suggestion-kind {
+    width: 54px;
+    font-size: 7px;
+  }
+}

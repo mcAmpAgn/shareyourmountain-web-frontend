@@ -1,4 +1,12 @@
 export type ItemKind = 'mountain' | 'route';
+export interface SuggestionQuery {
+  q: string;
+  kind?: ItemKind;
+  activityId?: number;
+}
+export interface SuggestionPage {
+  items: CatalogItem[];
+}
 export type MapBounds = [west: number, south: number, east: number, north: number];
 export interface MountainMapPage {
   items: CatalogItem[];

@@ -27,6 +27,26 @@ test('API validates queries, serves public DTOs, protects the local profile and 
     assert.equal((await fetch(base + '/api/catalog?unknown=1')).status, 400);
     assert.equal((await fetch(base + '/api/routes/nope')).status, 400);
     assert.equal((await fetch(base + '/api/routes/999')).status, 404);
+    const suggestions = await fetch(base + '/api/suggestions?q=Cerv').then((r) => r.json());
+    assert.deepEqual(
+      suggestions.items.map((item: { key: string }) => item.key),
+      ['m-10', 'r-2'],
+    );
+    assert.equal(
+      (await fetch(base + '/api/suggestions?q=Tasch').then((r) => r.json())).items[0].key,
+      'm-11',
+    );
+    assert.equal(
+      (await fetch(base + '/api/suggestions?q=Cerv&kind=route&activityId=7').then((r) => r.json()))
+        .items[0].key,
+      'r-2',
+    );
+    assert.equal(
+      (await fetch(base + '/api/suggestions?q=Pennine').then((r) => r.json())).items.length,
+      0,
+    );
+    assert.equal((await fetch(base + '/api/suggestions?q=C')).status, 400);
+    assert.equal((await fetch(base + '/api/suggestions?q=Cerv&pageSize=99')).status, 400);
     assert.equal((await fetch(base + '/api/mountains/10').then((r) => r.json())).key, 'm-10');
     assert.equal(
       (await fetch(base + '/api/map/mountains?bbox=6,45,8,47').then((r) => r.json())).items.length,

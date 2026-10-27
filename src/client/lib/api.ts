@@ -10,6 +10,8 @@ import type {
   ItemKind,
   MapBounds,
   MountainMapPage,
+  SuggestionQuery,
+  SuggestionPage,
 } from '../../shared/contracts';
 export class ApiError extends Error {
   constructor(
@@ -42,6 +44,8 @@ export const queryString = (query: CatalogQuery) => {
   return params.toString();
 };
 export const api = {
+  suggestions: (query: SuggestionQuery, signal?: AbortSignal) =>
+    request<SuggestionPage>('/suggestions?' + queryString(query), { signal }),
   mapMountains: (bounds: MapBounds, minElevation: number, signal?: AbortSignal) =>
     request<MountainMapPage>(
       '/map/mountains?' +

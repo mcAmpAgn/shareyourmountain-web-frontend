@@ -27,6 +27,9 @@ export const catalogQuery = z
   })
   .strict();
 export const catalogId = id;
+export const suggestionQuery = catalogQuery
+  .pick({ q: true, kind: true, activityId: true })
+  .extend({ q: z.string().trim().min(2).max(120) });
 export const adventureId = z.uuid();
 export const adventureCreate = z
   .object({ kind: z.enum(['mountain', 'route']), targetId: id })
