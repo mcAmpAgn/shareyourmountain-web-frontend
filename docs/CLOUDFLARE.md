@@ -4,6 +4,8 @@ Production uses one Worker for the API and built React assets, with D1 for the c
 
 ## Provision and import
 
+The repository now points to the existing production `shareyourmountain-catalog` database. For that account, use the configured `DB` binding; do not create another database or replay the initial seed. The production schema and December 2017 public catalog have already been imported.
+
 Use Node 22 or later and an authenticated Cloudflare account:
 
 ```powershell
@@ -69,3 +71,9 @@ Run the local seed once. Local D1 is separate from the Node database and from re
 - [D1 import and export](https://developers.cloudflare.com/d1/best-practices/import-export-data/)
 - [D1 migrations](https://developers.cloudflare.com/d1/reference/migrations/)
 - [Validating Access JWTs](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/)
+
+## Troubleshooting an empty database
+
+If the dashboard shows zero application tables and catalog endpoints return 503, the database has been created but not initialised. Confirm the Worker DB binding and database_id refer to the same intended database. Apply the remote migrations, then import the generated public catalog once. An empty database is separate from the populated local SQLite or local D1 database; deployment alone does not copy either one.
+
+After setup, check /api/health, /api/stats and a catalog search on the live domain. For the December 2017 snapshot, the stored totals are 12,311 mountains and 3,041 routes; public discovery includes 12,266 active mountains and 3,028 active routes. Inspect the seed marker before retrying an interrupted import and preserve existing personal data.
