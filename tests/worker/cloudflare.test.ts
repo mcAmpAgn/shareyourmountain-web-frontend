@@ -16,6 +16,7 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       bindings: {
         ACCESS_TEAM_DOMAIN: 'https://fixture.cloudflareaccess.com',
         ACCESS_AUD: 'fixture-audience',
+        ACCESS_LOGIN_PROVIDER: 'google',
       },
       outboundService: async (request) =>
         new MiniflareResponse(
@@ -194,6 +195,22 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       0,
     );
     assert.equal((await call('/api/me/login', alice)).status, 303);
+    const capabilities = (await mf
+      .dispatchFetch('https://example.test/api/capabilities')
+      .then((r) => r.json())) as { signInProvider: string; signOutUrl: string };
+    assert.equal(capabilities.signInProvider, 'google');
+    assert.equal(capabilities.signOutUrl, '/cdn-cgi/access/logout');
+    const returned = await call('/api/me/login?kind=mountain&targetId=10&resume=1', alice);
+    assert.equal(returned.status, 303);
+    assert.equal(
+      returned.headers.get('Location'),
+      'https://example.test/?resumeFavorite=1#detail=m-10',
+    );
+    assert.equal(returned.headers.get('Cache-Control'), 'no-store');
+    assert.equal((await call('/api/me/login?returnTo=https://evil.test', alice)).status, 400);
+    assert.equal((await call('/api/me/login?kind=route', alice)).status, 400);
+    assert.equal((await call('/api/me/login?resume=1', alice)).status, 400);
+    assert.equal((await call('/api/me/login?kind=mountain&targetId=-1', alice)).status, 400);
   } finally {
     source.sqlite.close();
     await mf.dispose();

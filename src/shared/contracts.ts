@@ -7,6 +7,8 @@ export interface MountainMapPage {
 export interface ProfileCapabilities {
   profileMode: 'local' | 'access' | 'disabled';
   signInUrl: string | null;
+  signInProvider: 'google' | 'access' | null;
+  signOutUrl: string | null;
 }
 export interface CatalogItem {
   key: string;

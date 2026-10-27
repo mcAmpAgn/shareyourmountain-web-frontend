@@ -79,7 +79,7 @@ export function DetailModal({
             <div className="detail-actions">
               <button
                 className="button"
-                disabled={adventures.pending || adventures.loading || !adventures.canSave}
+                disabled={adventures.pending || adventures.loading}
                 onClick={() => void adventures.toggle(item)}
               >
                 {adventures.saved(item) ? '♥ Salvata · Rimuovi' : '♡ Salva avventura'}
@@ -110,9 +110,9 @@ export function DetailModal({
             </div>
             <p role="status">{copyMessage}</p>
             {adventures.needsSignIn && adventures.signInUrl && (
-              <a className="source-link" href={adventures.signInUrl}>
+              <button className="text-button" onClick={() => adventures.requestSignIn(item)}>
                 Accedi per salvare questa meta ↗
-              </a>
+              </button>
             )}
             {adventures.error && <p role="alert">{adventures.error}</p>}
             {item.kind === 'route' && item.latitude === null && (

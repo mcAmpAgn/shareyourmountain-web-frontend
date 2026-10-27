@@ -3,6 +3,7 @@
   "name": "shareyourmountain-web-frontend",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-10-26",
+  "vars": { "ACCESS_LOGIN_PROVIDER": "google" },
   "build": { "command": "npm run build" },
   "assets": {
     "directory": "./dist/client",

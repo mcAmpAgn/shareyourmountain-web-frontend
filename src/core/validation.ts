@@ -1,4 +1,15 @@
 import { z } from 'zod';
+export const signInQuery = z
+  .object({
+    kind: z.enum(['mountain', 'route']).optional(),
+    targetId: z.coerce.number().int().positive().max(2147483647).optional(),
+    resume: z.literal('1').optional(),
+  })
+  .strict()
+  .refine(
+    (v) => !!v.kind === !!v.targetId && (!v.resume || !!v.kind),
+    'Invalid sign-in destination',
+  );
 const id = z.coerce.number().int().positive().max(2147483647);
 export const catalogQuery = z
   .object({

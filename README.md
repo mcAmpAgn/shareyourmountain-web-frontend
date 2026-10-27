@@ -109,3 +109,8 @@ See [architecture](docs/ARCHITECTURE.md), [verification](docs/VERIFICATION.md), 
 ## GitHub pipeline
 
 See [CI documentation](docs/CI.md) for the Windows/Linux test matrix, dependency audit, verified runtime artifact, and production-only smoke test. Run `npm run package:release` after building to create the ignored release directory; `npm run test:release` verifies an isolated copy without using your database.
+
+## Google sign-in for favourites
+
+Signed-out visitors select a heart to open the sign-in prompt. Google is the preferred production login through Cloudflare Access; the selected adventure returns after login and is saved only with a matching, short-lived same-tab intent. Account logout is available in the adventures panel. Follow [Google setup](docs/GOOGLE_SIGN_IN.md) to configure the identity provider and Access policy; no credentials are committed. The Node localhost profile remains development-only.
+

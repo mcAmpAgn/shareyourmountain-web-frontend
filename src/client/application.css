@@ -113,3 +113,57 @@
     min-height: 260px;
   }
 }
+
+.sign-in-prompt {
+  text-align: center;
+  padding: 28px 0 12px;
+}
+.sign-in-heart {
+  color: #66834c;
+  font-size: 38px;
+}
+.sign-in-prompt h3 {
+  font-size: 23px;
+  margin: 12px 0;
+}
+.sign-in-prompt p {
+  line-height: 1.8;
+  font-size: 13px;
+}
+.sign-in-target {
+  border-radius: 6px;
+  padding: 12px;
+  background: #edf0e7;
+}
+.google-sign-in {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  padding: 12px 24px;
+  background: white;
+  border: 1px solid #747775;
+  border-radius: 6px;
+  color: #1f1f1f;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.google-sign-in:hover:not(:disabled) {
+  background: #f4f7f5;
+}
+.google-sign-in:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.google-letter {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4285f4;
+}
+.sign-in-prompt .sign-in-note {
+  color: #64766b;
+  font-size: 11px;
+  margin-top: 20px;
+}
