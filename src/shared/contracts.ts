@@ -1,4 +1,9 @@
 export type ItemKind = 'mountain' | 'route';
+export type MapBounds = [west: number, south: number, east: number, north: number];
+export interface MountainMapPage {
+  items: CatalogItem[];
+  limit: number;
+}
 export interface ProfileCapabilities {
   profileMode: 'local' | 'access' | 'disabled';
   signInUrl: string | null;

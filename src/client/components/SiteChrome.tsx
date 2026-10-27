@@ -25,6 +25,7 @@ export function Header({ count, onAdventures }: { count: number; onAdventures: (
           Esplora
         </a>
         <a href="#destinations">Destinazioni</a>
+        <a href="#map">Mappa</a>
         <a href="#community">Il progetto</a>
       </nav>
       <button className="saved-button" onClick={onAdventures}>

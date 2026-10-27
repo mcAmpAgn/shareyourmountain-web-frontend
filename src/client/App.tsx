@@ -12,6 +12,7 @@ import { DetailModal } from './components/DetailModal';
 import { AdventuresModal } from './components/AdventuresModal';
 import { StorySections } from './components/StorySections';
 import { Modal } from './components/Modal';
+import { MapSection } from './components/MapSection';
 
 export function App() {
   const meta = useResource(async (signal) => {
@@ -74,6 +75,7 @@ export function App() {
           onOpen={open}
           onFeatured={navigation.inspire}
         />
+        <MapSection onOpen={open} />
         <StorySections onSearch={search} />
       </main>
       <Footer onInfo={setInfo} />
@@ -137,6 +139,10 @@ export function App() {
                   Puoi rimuovere singole avventure dalla tua lista. Non usiamo tracciatori, cookie
                   pubblicitari o analisi di navigazione. Le foto storiche e le fonti esterne vengono
                   servite dai rispettivi siti.
+                </p>
+                <p>
+                  Aprendo la mappa, il browser carica lo sfondo da OpenStreetMap. Non richiediamo la
+                  tua posizione.
                 </p>
               </>
             )}

@@ -71,7 +71,7 @@ Components do not issue SQL or know legacy database fields. Hooks own network/na
 - Map links clearly distinguish route, summit and parking positions. Missing data remains missing.
 - Persistent planned/completed adventures, notes, duplicate prevention and timestamps.
 - Shareable detail URLs, filter query strings, loading/error/empty states and native accessible dialogs.
-- Bounding-box mountain API, capped at 1,000 records, ready for a future interactive map. The current UI uses OpenStreetMap links and does not draw route geometry.
+- Interactive homepage OpenStreetMap section: pan/zoom, summit markers, elevation filter, destination shortcuts and linked mountain details. Loads on request and retrieves at most 1,000 peaks per viewport; missing route geometry is never inferred.
 
 FTS token-prefix search differs from arbitrary middle-of-word matching. Grades and activity classifications are historical records, not current route advice.
 
