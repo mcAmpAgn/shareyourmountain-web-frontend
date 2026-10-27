@@ -2,3 +2,6 @@
 # Copy to .dev.vars only if you want to test real Access sessions locally.
 # ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
 # ACCESS_AUD=your-application-audience
+
+# Set only after choosing Google as the sole login method for this Access app.
+# ACCESS_LOGIN_PROVIDER=google

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Adventure, CatalogItem } from '../../shared/contracts';
 import type { AdventuresState } from '../hooks/use-adventures';
 import { Modal } from './Modal';
+import { SignInPrompt } from './SignInPrompt';
 export function AdventuresModal({
   state,
   onClose,
@@ -21,17 +22,19 @@ export function AdventuresModal({
             ? 'Il tuo profilo locale. Preferiti e note sono salvati nel database su questo computer.'
             : 'Le tue avventure e note sono legate al tuo accesso personale.'}
         </p>
-        {state.needsSignIn && state.signInUrl && (
-          <div className="empty-state">
-            <h3>Le tue prossime mete, tutte insieme.</h3>
-            <p>Accedi per salvare avventure e note nel tuo profilo.</p>
-            <a className="button" href={state.signInUrl}>
-              Accedi per salvare ↗
-            </a>
-          </div>
-        )}
+        {!state.loading && !state.canSave && !state.error && <SignInPrompt state={state} />}
         {state.profileMode === 'disabled' && !state.loading && (
-          <p>Puoi esplorare l’archivio. Il salvataggio online non è ancora disponibile.</p>
+          <p className="muted">I preferiti online non sono ancora attivi.</p>
+        )}
+        {state.canSave && state.profileMode === 'access' && state.signOutUrl && (
+          <div>
+            <a className="text-button" href={state.signOutUrl}>
+              Esci dal tuo account ↗
+            </a>
+            <p className="muted">
+              Termina anche l’accesso alle altre applicazioni collegate allo stesso servizio.
+            </p>
+          </div>
         )}
         {state.error && (
           <div className="notice" role="alert">

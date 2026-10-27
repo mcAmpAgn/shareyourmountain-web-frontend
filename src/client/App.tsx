@@ -12,6 +12,8 @@ import { DetailModal } from './components/DetailModal';
 import { AdventuresModal } from './components/AdventuresModal';
 import { StorySections } from './components/StorySections';
 import { Modal } from './components/Modal';
+import { MapSection } from './components/MapSection';
+import { SignInModal } from './components/SignInModal';
 
 export function App() {
   const meta = useResource(async (signal) => {
@@ -21,7 +23,7 @@ export function App() {
     adventures = useAdventures();
   const navigation = useCatalogNavigation();
   const { query, featured, detail, change, reset, search, closeDetail } = navigation;
-  const [showAdventures, setShowAdventures] = useState(false);
+  const [showAdventures, setShowAdventures] = useState(() => location.hash === '#adventures');
   const [info, setInfo] = useState<'data' | 'privacy' | null>(null);
   function open(item: Pick<CatalogItem, 'kind' | 'id'>) {
     setShowAdventures(false);
@@ -74,6 +76,7 @@ export function App() {
           onOpen={open}
           onFeatured={navigation.inspire}
         />
+        <MapSection onOpen={open} />
         <StorySections onSearch={search} />
       </main>
       <Footer onInfo={setInfo} />
@@ -138,11 +141,16 @@ export function App() {
                   pubblicitari o analisi di navigazione. Le foto storiche e le fonti esterne vengono
                   servite dai rispettivi siti.
                 </p>
+                <p>
+                  Aprendo la mappa, il browser carica lo sfondo da OpenStreetMap. Non richiediamo la
+                  tua posizione.
+                </p>
               </>
             )}
           </div>
         </Modal>
       )}
+      {adventures.signInRequested && <SignInModal state={adventures} />}
     </>
   );
 }

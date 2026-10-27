@@ -34,7 +34,11 @@ export function useCatalogNavigation() {
     [featured, setFeatured] = useState(() => !location.search),
     [detail, setDetail] = useState(readDetail);
   useEffect(() => {
-    const params = queryString(query);
+    const search = new URLSearchParams(queryString(query));
+    // Keep the login return marker until the authenticated favourites hook consumes it.
+    if (new URLSearchParams(location.search).get('resumeFavorite') === '1')
+      search.set('resumeFavorite', '1');
+    const params = search.toString();
     history.replaceState(
       null,
       '',

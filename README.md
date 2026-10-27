@@ -71,7 +71,7 @@ Components do not issue SQL or know legacy database fields. Hooks own network/na
 - Map links clearly distinguish route, summit and parking positions. Missing data remains missing.
 - Persistent planned/completed adventures, notes, duplicate prevention and timestamps.
 - Shareable detail URLs, filter query strings, loading/error/empty states and native accessible dialogs.
-- Bounding-box mountain API, capped at 1,000 records, ready for a future interactive map. The current UI uses OpenStreetMap links and does not draw route geometry.
+- Interactive homepage OpenStreetMap section: pan/zoom, summit markers, elevation filter, destination shortcuts and linked mountain details. Loads on request and retrieves at most 1,000 peaks per viewport; missing route geometry is never inferred.
 
 FTS token-prefix search differs from arbitrary middle-of-word matching. Grades and activity classifications are historical records, not current route advice.
 
@@ -109,3 +109,8 @@ See [architecture](docs/ARCHITECTURE.md), [verification](docs/VERIFICATION.md), 
 ## GitHub pipeline
 
 See [CI documentation](docs/CI.md) for the Windows/Linux test matrix, dependency audit, verified runtime artifact, and production-only smoke test. Run `npm run package:release` after building to create the ignored release directory; `npm run test:release` verifies an isolated copy without using your database.
+
+## Google sign-in for favourites
+
+Signed-out visitors select a heart to open the sign-in prompt. Google is the preferred production login through Cloudflare Access; the selected adventure returns after login and is saved only with a matching, short-lived same-tab intent. Account logout is available in the adventures panel. Follow [Google setup](docs/GOOGLE_SIGN_IN.md) to configure the identity provider and Access policy; no credentials are committed. The Node localhost profile remains development-only.
+

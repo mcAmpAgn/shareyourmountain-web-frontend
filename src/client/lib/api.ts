@@ -8,6 +8,8 @@ import type {
   Filters,
   Stats,
   ItemKind,
+  MapBounds,
+  MountainMapPage,
 } from '../../shared/contracts';
 export class ApiError extends Error {
   constructor(
@@ -22,6 +24,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     ...options,
     redirect: 'error',
     headers: {
+      'X-Requested-With': 'XMLHttpRequest',
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers,
     },
@@ -39,6 +42,12 @@ export const queryString = (query: CatalogQuery) => {
   return params.toString();
 };
 export const api = {
+  mapMountains: (bounds: MapBounds, minElevation: number, signal?: AbortSignal) =>
+    request<MountainMapPage>(
+      '/map/mountains?' +
+        new URLSearchParams({ bbox: bounds.join(','), minElevation: String(minElevation) }),
+      { signal },
+    ),
   capabilities: (signal?: AbortSignal) =>
     request<import('../../shared/contracts').ProfileCapabilities>('/capabilities', { signal }),
   stats: (signal?: AbortSignal) => request<Stats>('/stats', { signal }),

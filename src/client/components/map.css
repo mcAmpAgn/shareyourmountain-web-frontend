@@ -1,0 +1,210 @@
+.map-section {
+  padding-top: 0;
+}
+/* Preserve Leaflet's SVG dimensions instead of the site's 22px icon rule. */
+.mountain-map .leaflet-overlay-pane svg {
+  width: auto;
+}
+.map-label {
+  color: #607568;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.map-welcome {
+  padding: 45px 24px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background:
+    repeating-radial-gradient(
+      ellipse at 30% 70%,
+      transparent 0 28px,
+      #577c5510 29px 30px,
+      transparent 31px 50px
+    ),
+    #edf0e7;
+}
+.map-compass {
+  font-size: 46px;
+  color: #315b46;
+}
+.map-welcome h3 {
+  font-size: 24px;
+  margin: 12px 0;
+}
+.map-welcome p {
+  max-width: 480px;
+  margin: 0 auto 24px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.map-open {
+  background: #315b46;
+  color: white;
+  border: 0;
+  padding: 15px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.map-open span {
+  margin-left: 20px;
+}
+.map-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.map-destinations {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.map-destinations button,
+.map-toolbar select {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 5px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink);
+}
+.map-destinations button {
+  cursor: pointer;
+}
+.map-destinations button:hover {
+  background: #edf0e7;
+}
+.map-toolbar label {
+  font-size: 12px;
+}
+.map-toolbar select {
+  margin-left: 10px;
+}
+.map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.mountain-map,
+.map-placeholder {
+  height: 500px;
+  min-width: 0;
+  z-index: 0;
+  background: #e4e9de;
+}
+.map-results {
+  padding: 26px 22px;
+  background: #f8f8f2;
+}
+.map-results h3 {
+  font-size: 22px;
+  margin: 10px 0;
+}
+.map-results p {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.map-results ul {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+}
+.map-results li {
+  border-bottom: 1px solid var(--line);
+}
+.map-results li button {
+  border: 0;
+  background: transparent;
+  padding: 12px 0;
+  display: flex;
+  width: 100%;
+  text-align: left;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+.map-results li button:hover {
+  color: #62813a;
+}
+.map-results small {
+  display: block;
+  font-size: 10px;
+  color: #6c786f;
+  margin-top: 4px;
+}
+.map-results b {
+  white-space: nowrap;
+  font-size: 10px;
+}
+.map-results .map-note {
+  font-size: 10px;
+  color: #6c786f;
+}
+.map-footnote {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  color: #6c786f;
+  margin-top: 14px;
+  line-height: 1.7;
+}
+.map-footnote a {
+  color: inherit;
+}
+.mountain-popup {
+  min-width: 150px;
+  color: #21372f;
+}
+.mountain-popup strong {
+  font-size: 15px;
+}
+.mountain-popup button {
+  background: #315b46;
+  color: white;
+  border: 0;
+  padding: 9px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.map-tile-error {
+  position: absolute;
+  bottom: 22px;
+  left: 12px;
+  right: 12px;
+  z-index: 800;
+  background: white;
+  padding: 10px;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .map-layout {
+    grid-template-columns: 1fr;
+  }
+  .mountain-map,
+  .map-placeholder {
+    height: 360px;
+  }
+  .map-results {
+    padding: 22px;
+  }
+  .map-label {
+    display: none;
+  }
+  .map-welcome h3 {
+    font-size: 21px;
+  }
+}

@@ -46,7 +46,9 @@ export function createApp(db: AppDatabase) {
   const repository = createCatalogRepository(db),
     catalog = createCatalogService(repository),
     adventures = createAdventureService(createAdventureRepository(db), repository);
-  app.get('/api/capabilities', (_req, res) => res.json({ profileMode: 'local', signInUrl: null }));
+  app.get('/api/capabilities', (_req, res) =>
+    res.json({ profileMode: 'local', signInUrl: null, signInProvider: null, signOutUrl: null }),
+  );
   app.get('/api/health', async (_req, res) =>
     res.json({ ok: true, initialized: (await catalog.stats()).totalMountains > 0 }),
   );

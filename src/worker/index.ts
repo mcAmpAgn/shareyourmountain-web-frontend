@@ -71,6 +71,12 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
           return json({
             profileMode: accessConfigured(env) ? 'access' : 'disabled',
             signInUrl: accessConfigured(env) ? '/api/me/login' : null,
+            signInProvider: accessConfigured(env)
+              ? env.ACCESS_LOGIN_PROVIDER === 'google'
+                ? 'google'
+                : 'access'
+              : null,
+            signOutUrl: accessConfigured(env) ? '/cdn-cgi/access/logout' : null,
           });
         if (!env.DB) throw new ApplicationError(503, 'Il database non è configurato.');
         const repository = createCatalogRepository(d1Queries(env.DB)),
@@ -111,8 +117,21 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
         if (path.startsWith('/api/me/')) {
           if (!['GET', 'HEAD'].includes(method)) sameOrigin(request);
           const profileId = await verifyIdentity(request, env);
-          if (path === '/api/me/login' && method === 'GET')
-            return Response.redirect(url.origin + '/#explore', 303);
+          if (path === '/api/me/login' && method === 'GET') {
+            const input = validation.signInQuery.parse(query);
+            const hash =
+              input.kind && input.targetId
+                ? `#detail=${input.kind === 'mountain' ? 'm' : 'r'}-${input.targetId}`
+                : '#adventures';
+            return new Response(null, {
+              status: 303,
+              headers: {
+                Location:
+                  url.origin + '/' + (input.resume === '1' ? '?resumeFavorite=1' : '') + hash,
+                'Cache-Control': 'no-store',
+              },
+            });
+          }
           const isList = path === '/api/me/adventures',
             target = path.match(/^\/api\/me\/adventures\/([^/]+)$/);
           if (!isList && !target) throw new ApplicationError(404, 'Endpoint non trovato.');
