@@ -115,3 +115,5 @@ See [CI documentation](docs/CI.md) for the Windows/Linux test matrix, dependency
 ## Google sign-in for favourites
 
 Signed-out visitors select a heart to open the sign-in prompt. Google is the preferred production login through Cloudflare Access; the selected adventure returns after login and is saved only with a matching, short-lived same-tab intent. Account logout is available in the adventures panel. Follow [Google setup](docs/GOOGLE_SIGN_IN.md) to configure the identity provider and Access policy; no credentials are committed. The Node localhost profile remains development-only.
+
+Trigger pipeline
