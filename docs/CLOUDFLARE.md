@@ -77,3 +77,15 @@ Run the local seed once. Local D1 is separate from the Node database and from re
 If the dashboard shows zero application tables and catalog endpoints return 503, the database has been created but not initialised. Confirm the Worker DB binding and database_id refer to the same intended database. Apply the remote migrations, then import the generated public catalog once. An empty database is separate from the populated local SQLite or local D1 database; deployment alone does not copy either one.
 
 After setup, check /api/health, /api/stats and a catalog search on the live domain. For the December 2017 snapshot, the stored totals are 12,311 mountains and 3,041 routes; public discovery includes 12,266 active mountains and 3,028 active routes. Inspect the seed marker before retrying an interrupted import and preserve existing personal data.
+
+## D1 daily read quota
+
+On the Free plan, Cloudflare blocks queries after the account reaches its daily row-read allowance. Error 7500 is a quota failure, not evidence of missing tables or lost data. The allowance resets at midnight UTC (01:00 Berlin in winter, 02:00 in summer). Reimporting or redeploying does not reset the allowance. Billing changes require the account owner's decision.
+
+The catalog now counts and filters lightweight mountain/route candidates before loading card joins. Autocomplete skips a total-count query. Region/country filters use set membership rather than repeated correlated scans; readiness reads one mountain row. Applied migrations remain unchanged.
+
+Workers cache successful public JSON reads only: stats/filters for one hour, lists/details for five minutes, map data for two minutes, and suggestions for one minute. The browser freshness window is capped at one minute. Edge Cache API availability depends on the deployment environment; a bounded isolate cache (64 entries, 8 MiB, maximum 512 KiB per entry) provides a fallback and coalesces concurrent identical requests. Keys preserve all query parameters, are separated by database in isolate memory, and use a versioned edge namespace. Invalidate that namespace when changing catalog response contracts; catalog import changes otherwise appear after TTL expiry.
+
+Personal APIs, sign-in/capability responses, mutations, redirects, cookies and errors are never cached. Quota failures return a safe 503 response with D1_DAILY_LIMIT, retryAt and Retry-After, without exposing SQL or account details. Cache tests cover isolation, expiry, concurrent requests and private/error exclusion.
+
+A read-only comparison against the full December 2017 catalog preserved stats, filters, listing, search, suggestion and map results. Approximate SQLite VM work fell from 61,173,000 to 130,000 steps for filters, 930,000 to 45,000 for stats, and 1,937,000 to 557,000 for suggestions. These are local execution-step estimates, not measured production D1 billable row counts. Verify live D1 usage after deployment; this does not guarantee the Free tier can support arbitrary traffic.

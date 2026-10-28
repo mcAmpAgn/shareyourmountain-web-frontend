@@ -50,7 +50,7 @@ export function createApp(db: AppDatabase) {
     res.json({ profileMode: 'local', signInUrl: null, signInProvider: null, signOutUrl: null }),
   );
   app.get('/api/health', async (_req, res) =>
-    res.json({ ok: true, initialized: (await catalog.stats()).totalMountains > 0 }),
+    res.json({ ok: true, initialized: await catalog.initialized() }),
   );
   app.get('/api/stats', async (_req, res) => res.json(await catalog.stats()));
   app.get('/api/filters', async (_req, res) => res.json(await catalog.filters()));

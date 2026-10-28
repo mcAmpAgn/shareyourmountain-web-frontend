@@ -1,4 +1,6 @@
 import { ZodError } from 'zod';
+import { createPublicCache } from './public-cache.js';
+import { isD1QuotaError, quotaResponse } from './quota-error.js';
 import type { WorkerEnv } from './bindings.js';
 import { createCatalogRepository } from '../core/catalog-repository.js';
 import { createCatalogService } from '../core/catalog-service.js';
@@ -59,7 +61,8 @@ async function readJSON(request: Request) {
 }
 type IdentityVerifier = typeof verifyAccessIdentity;
 export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIdentity) {
-  return {
+  const cached = createPublicCache();
+  const handler = {
     async fetch(request: Request, env: WorkerEnv): Promise<Response> {
       const url = new URL(request.url),
         path = url.pathname,
@@ -85,7 +88,7 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
         if ([...url.searchParams.keys()].some((key) => url.searchParams.getAll(key).length > 1))
           throw new ApplicationError(400, 'Parametri duplicati non validi.');
         if (method === 'GET' && path === '/api/health')
-          return json({ ok: true, initialized: (await catalog.stats()).totalMountains > 0 });
+          return json({ ok: true, initialized: await catalog.initialized() });
         if (method === 'GET' && path === '/api/stats') return json(await catalog.stats());
         if (method === 'GET' && path === '/api/filters') return json(await catalog.filters());
         if (method === 'GET' && path === '/api/suggestions')
@@ -165,6 +168,7 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
         }
         return json({ error: 'Endpoint non trovato.' }, 404);
       } catch (error) {
+        if (isD1QuotaError(error)) return quotaResponse();
         if (error instanceof ZodError)
           return json(
             {
@@ -186,6 +190,10 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
         );
       }
     },
+  };
+  return {
+    fetch: (request: Request, env: WorkerEnv) =>
+      cached(request, env.DB ?? env, () => handler.fetch(request, env)),
   };
 }
 export default createWorker();

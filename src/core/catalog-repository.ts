@@ -46,16 +46,24 @@ export function itemDTO(row: CatalogRow): CatalogItem {
   };
 }
 export function createCatalogRepository(database: SqlDatabase) {
-  async function list(query: CatalogQuery, namesOnly = false): Promise<CatalogPage> {
+  // Filtering, sorting and counts do not need card joins, country aggregation or route counts.
+  const candidates = `SELECT 'm-'||m.id AS key,m.id,'mountain' AS kind,m.mntn_name AS name,
+    m.mntn_altitude AS elevation_m,coalesce(m.mntnRange_id,0) AS range_id,NULL AS region_id,
+    NULL AS country_id,NULL AS activity_id,NULL AS mountain_id,m.mntn_status AS active FROM mountain m
+    UNION ALL SELECT 'r-'||r.id,r.id,'route',coalesce(nullif(trim(r.route_title),''),r.route_name),
+    r.route_altitude,coalesce(r.mntnRange_id,m.mntnRange_id,0),r.region_id,r.country_id,
+    r.activity_id,r.mountain_id,r.route_status FROM route r LEFT JOIN mountain m ON m.id=r.mountain_id`;
+  async function selection(query: CatalogQuery, namesOnly = false) {
     const where = ['i.active=1'],
       params: (string | number)[] = [];
     if (query.q) {
       const words = query.q.normalize('NFC').match(/[\p{L}\p{N}]+/gu) ?? [];
-      if (!words.length)
-        return { items: [], total: 0, page: 1, pageSize: query.pageSize ?? 12, pages: 1 };
-      where.push('i.key IN (SELECT entity_key FROM catalog_search WHERE catalog_search MATCH ?)');
-      const match = words.map((w) => '"' + w + '"*').join(' AND ');
-      params.push(namesOnly ? 'name : (' + match + ')' : match);
+      if (!words.length) where.push('0');
+      else {
+        where.push('i.key IN (SELECT entity_key FROM catalog_search WHERE catalog_search MATCH ?)');
+        const match = words.map((w) => '"' + w + '"*').join(' AND ');
+        params.push(namesOnly ? 'name : (' + match + ')' : match);
+      }
     }
     for (const [key, column] of [
       ['kind', 'kind'],
@@ -84,10 +92,55 @@ export function createCatalogRepository(database: SqlDatabase) {
       );
       params.push(query.regionId, query.regionId);
     }
-    const condition = where.join(' AND '),
+    return { condition: where.join(' AND '), params };
+  }
+  async function getByKeys(keys: string[]): Promise<CatalogItem[]> {
+    const items = new Map<string, CatalogItem>();
+    for (let start = 0; start < keys.length; start += 80) {
+      const batch = keys.slice(start, start + 80),
+        parts: string[] = [],
+        params: number[] = [];
+      for (const [prefix, kind] of [
+        ['m-', 'mountain'],
+        ['r-', 'route'],
+      ] as const) {
+        const ids = batch
+          .filter((key) => key.startsWith(prefix) && /^(m|r)-[1-9]\d*$/.test(key))
+          .map((key) => Number(key.slice(2)))
+          .filter((id) => Number.isSafeInteger(id) && id <= 2147483647);
+        if (!ids.length) continue;
+        parts.push(
+          `SELECT * FROM catalog_items WHERE kind='${kind}' AND active=1 AND id IN (${ids.map(() => '?').join(',')})`,
+        );
+        params.push(...ids);
+      }
+      if (!parts.length) continue;
+      for (const row of await database.prepare(parts.join(' UNION ALL ')).all(...params)) {
+        const item = itemDTO(row as CatalogRow);
+        items.set(item.key, item);
+      }
+    }
+    return keys.flatMap((key) => (items.has(key) ? [items.get(key)!] : []));
+  }
+  async function pageItems(
+    condition: string,
+    params: (string | number)[],
+    order: string,
+    limit: number,
+    offset = 0,
+  ) {
+    const targets = (await database
+      .prepare(
+        `SELECT i.key FROM (${candidates}) i WHERE ${condition} ORDER BY ${order} LIMIT ? OFFSET ?`,
+      )
+      .all(...params, limit, offset)) as { key: string }[];
+    return getByKeys(targets.map((row) => row.key));
+  }
+  async function list(query: CatalogQuery): Promise<CatalogPage> {
+    const { condition, params } = await selection(query),
       total = (
         (await database
-          .prepare('SELECT count(*) AS n FROM catalog_items i WHERE ' + condition)
+          .prepare('SELECT count(*) AS n FROM (' + candidates + ') i WHERE ' + condition)
           .get(...params)) as { n: number }
       ).n;
     const pageSize = query.pageSize ?? 12,
@@ -97,12 +150,13 @@ export function createCatalogRepository(database: SqlDatabase) {
       query.sort === 'elevation'
         ? 'i.elevation_m DESC,i.kind,i.id'
         : 'i.name COLLATE NOCASE,i.kind,i.id';
-    const rows = (await database
-      .prepare(
-        `SELECT i.* FROM catalog_items i WHERE ${condition} ORDER BY ${order} LIMIT ? OFFSET ?`,
-      )
-      .all(...params, pageSize, (page - 1) * pageSize)) as CatalogRow[];
-    return { items: rows.map(itemDTO), total, page, pageSize, pages };
+    return {
+      items: await pageItems(condition, params, order, pageSize, (page - 1) * pageSize),
+      total,
+      page,
+      pageSize,
+      pages,
+    };
   }
   async function get(kind: ItemKind, id: number) {
     const row = (await database
@@ -113,7 +167,7 @@ export function createCatalogRepository(database: SqlDatabase) {
   async function stats(): Promise<Stats> {
     const counts = (await database
       .prepare(
-        "SELECT sum(kind='mountain' AND active=1) mountains,sum(kind='route' AND active=1) routes,sum(kind='mountain') totalMountains,sum(kind='route') totalRoutes FROM catalog_items",
+        'SELECT (SELECT count(*) FROM mountain WHERE mntn_status=1) mountains,(SELECT count(*) FROM route WHERE route_status=1) routes,(SELECT count(*) FROM mountain) totalMountains,(SELECT count(*) FROM route) totalRoutes',
       )
       .get()) as Record<string, number>;
     const batch = (await database
@@ -142,21 +196,24 @@ export function createCatalogRepository(database: SqlDatabase) {
         .all()) as Filters['ranges'],
       countries: (await database
         .prepare(
-          'SELECT c.id,c.country_name AS name FROM geo_country c WHERE EXISTS(SELECT 1 FROM ass_mountaincountry a WHERE a.country_id=c.id) OR EXISTS(SELECT 1 FROM route r WHERE r.country_id=c.id AND r.route_status=1) ORDER BY c.country_name',
+          'SELECT c.id,c.country_name AS name FROM geo_country c WHERE c.id IN (SELECT country_id FROM ass_mountaincountry UNION SELECT country_id FROM route WHERE route_status=1) ORDER BY c.country_name',
         )
         .all()) as Filters['countries'],
       regions: (await database
         .prepare(
-          'SELECT id,region_name AS name,country_id AS countryId FROM geo_region g WHERE EXISTS(SELECT 1 FROM ass_mountainregion a WHERE a.region_id=g.id) OR EXISTS(SELECT 1 FROM route r WHERE r.region_id=g.id AND r.route_status=1) ORDER BY region_name',
+          'SELECT id,region_name AS name,country_id AS countryId FROM geo_region WHERE id IN (SELECT region_id FROM ass_mountainregion UNION SELECT region_id FROM route WHERE route_status=1) ORDER BY region_name',
         )
         .all()) as Filters['regions'],
     };
   }
   return {
     list,
-    suggestions: async (query: SuggestionQuery) => ({
-      items: (await list({ ...query, page: 1, pageSize: 6 }, true)).items,
-    }),
+    suggestions: async (query: SuggestionQuery) => {
+      const { condition, params } = await selection(query, true);
+      return { items: await pageItems(condition, params, 'i.name COLLATE NOCASE,i.kind,i.id', 6) };
+    },
+    initialized: async () =>
+      !!(await database.prepare('SELECT 1 AS ready FROM mountain LIMIT 1').get()),
     get,
     stats,
     filters,
@@ -197,19 +254,7 @@ export function createCatalogRepository(database: SqlDatabase) {
       (await database
         .prepare('SELECT track_name AS name,track_url AS url FROM trackgps WHERE id=?')
         .get(id)) as { name: string; url: string | null } | undefined,
-    getByKeys: async (keys: string[]) => {
-      const items: CatalogItem[] = [];
-      for (let start = 0; start < keys.length; start += 80) {
-        const batch = keys.slice(start, start + 80);
-        const rows = await database
-          .prepare(
-            `SELECT * FROM catalog_items WHERE active=1 AND key IN (${batch.map(() => '?').join(',')})`,
-          )
-          .all(...batch);
-        items.push(...rows.map((row) => itemDTO(row as CatalogRow)));
-      }
-      return items;
-    },
+    getByKeys,
     map: async (bbox: number[], minElevation: number) =>
       (
         await database
@@ -217,7 +262,7 @@ export function createCatalogRepository(database: SqlDatabase) {
             "SELECT * FROM catalog_items WHERE kind='mountain' AND active=1 AND longitude BETWEEN ? AND ? AND latitude BETWEEN ? AND ? AND elevation_m>=? ORDER BY elevation_m DESC,id LIMIT 1000",
           )
           .all(bbox[0], bbox[2], bbox[1], bbox[3], minElevation)
-      ).map((r) => itemDTO(r as CatalogRow)),
+      ).map((row) => itemDTO(row as CatalogRow)),
   };
 }
 export type CatalogRepository = ReturnType<typeof createCatalogRepository>;
