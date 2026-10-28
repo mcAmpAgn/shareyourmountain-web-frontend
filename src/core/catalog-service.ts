@@ -15,6 +15,7 @@ export function createCatalogService(repository: CatalogRepository) {
   return {
     list: repository.list,
     suggestions: repository.suggestions,
+    initialized: repository.initialized,
     stats: repository.stats,
     filters: repository.filters,
     map: repository.map,
