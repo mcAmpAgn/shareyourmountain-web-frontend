@@ -6,19 +6,26 @@
   gap: 25px;
 }
 .alpine-hero {
+  display: flex;
+  flex-direction: column;
   height: auto;
-  min-height: 790px;
+  min-height: 100vh;
+  min-height: 100dvh;
   background-position: center 58%;
   transition: background-image 1.2s ease;
 }
 .alpine-hero .hero-content {
-  padding-top: 158px;
-  padding-bottom: 120px;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(108px, 15svh, 140px);
+  padding-bottom: clamp(22px, 4svh, 36px);
 }
 .hero-lead {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 68px;
+  grid-template-columns: 1fr 290px;
+  gap: 48px;
   align-items: center;
 }
 .alpine-hero h1 {
@@ -27,7 +34,7 @@
 }
 .alpine-hero .search-bar {
   width: 100%;
-  margin-top: 42px;
+  margin-top: 28px;
 }
 .hero-night .hero-shade {
   background:
@@ -57,6 +64,15 @@
   color: #21372f;
   background: white;
 }
+.alpine-hero .hero-bottom {
+  flex-shrink: 0;
+  position: relative;
+  bottom: auto;
+  left: auto;
+  right: auto;
+  padding-bottom: clamp(18px, 3svh, 28px);
+  gap: 16px;
+}
 .hero-bottom a {
   display: flex;
   align-items: center;
@@ -65,7 +81,7 @@
   background: #102b304a;
   border: 1px solid #ffffff40;
   border-radius: 12px;
-  padding: 25px;
+  padding: 18px 21px;
   color: white;
   backdrop-filter: blur(14px);
 }
@@ -86,7 +102,7 @@
 }
 .weather-location {
   font-size: 13px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 .weather-location span {
   color: #d8e2dd;
@@ -99,17 +115,17 @@
   margin-top: 12px;
 }
 .weather-symbol {
-  font-size: 48px;
+  font-size: 34px;
   line-height: 1;
   color: #e2eec9;
 }
 .weather-main strong {
-  font-size: 63px;
+  font-size: 46px;
   font-weight: 400;
   letter-spacing: -3px;
 }
 .weather-main strong small {
-  font-size: 32px;
+  font-size: 25px;
   letter-spacing: 0;
 }
 .weather-condition {
@@ -117,7 +133,7 @@
   margin-top: 4px;
 }
 .weather-condition > span {
-  display: block;
+  display: inline;
   color: #dce2d9;
   font-size: 11px;
   margin-top: 7px;
@@ -125,8 +141,8 @@
 .weather-facts {
   display: flex;
   gap: 30px;
-  margin: 23px 0 16px;
-  padding-top: 15px;
+  margin: 12px 0 10px;
+  padding-top: 10px;
   border-top: 1px solid #ffffff30;
 }
 .weather-facts dt {
@@ -137,7 +153,7 @@
 }
 .weather-facts dd {
   margin: 0;
-  font-size: 21px;
+  font-size: 17px;
 }
 .weather-facts dd small {
   font-size: 10px;
@@ -153,14 +169,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.weather-caption {
-  font-size: 9px;
-  line-height: 1.6;
-  color: #d6ded6;
-  margin-top: 12px;
-}
 .weather-placeholder {
-  min-height: 150px;
+  min-height: 100px;
   padding-top: 15px;
 }
 .weather-placeholder > span {
@@ -489,18 +499,29 @@
 }
 @media (max-width: 760px) {
   .hero-lead {
-    grid-template-columns: 1fr;
-    gap: 28px;
+    display: contents;
   }
   .alpine-hero .hero-content {
-    padding-top: 125px;
-    padding-bottom: 115px;
+    padding-top: 112px;
+    padding-bottom: 24px;
+  }
+  .hero-copy {
+    order: 0;
+  }
+  .alpine-hero .search-bar {
+    order: 1;
+    margin-top: 26px;
+  }
+  .hero-tags {
+    order: 2;
   }
   .alpine-hero h1 {
     font-size: 43px;
   }
   .weather-panel {
-    padding: 19px;
+    order: 3;
+    margin-top: 26px;
+    padding: 16px 19px;
     max-width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -508,7 +529,6 @@
   }
   .weather-place,
   .weather-location,
-  .weather-caption,
   .weather-source,
   .weather-unavailable {
     grid-column: 1/-1;
@@ -519,10 +539,10 @@
     margin-top: 12px;
   }
   .weather-main strong {
-    font-size: 52px;
+    font-size: 42px;
   }
   .weather-symbol {
-    font-size: 37px;
+    font-size: 30px;
   }
   .weather-condition {
     grid-column: 2;
@@ -539,9 +559,6 @@
   .weather-placeholder {
     min-height: 110px;
     grid-column: 1/-1;
-  }
-  .weather-caption {
-    font-size: 8px;
   }
   .weather-source {
     margin-top: 3px;

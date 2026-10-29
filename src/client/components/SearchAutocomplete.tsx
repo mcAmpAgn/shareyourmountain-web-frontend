@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { CatalogItem } from '../../shared/contracts';
 import { useSearchSuggestions } from '../hooks/use-search-suggestions';
 import { formatNumber } from '../lib/presentation';
+import { useSuggestionPlacement } from '../hooks/use-suggestion-placement';
 import './search-autocomplete.css';
 
 export function SearchAutocomplete({
@@ -23,6 +24,7 @@ export function SearchAutocomplete({
   const container = useRef<HTMLDivElement>(null);
   const result = useSearchSuggestions(value, activity, open);
   const visible = open && value.trim().length >= 2;
+  const layout = useSuggestionPlacement(container, visible);
   useEffect(() => {
     setActive(-1);
   }, [value, activity]);
@@ -107,7 +109,11 @@ export function SearchAutocomplete({
         />
       </span>
       {visible && (
-        <div className="autocomplete-panel">
+        <div
+          className="autocomplete-panel"
+          data-placement={layout.placement}
+          style={{ maxHeight: layout.maxHeight }}
+        >
           <p id={`${id}-status`} role="status" className="autocomplete-status">
             {result.loading
               ? 'Cerchiamo nell’archivio…'

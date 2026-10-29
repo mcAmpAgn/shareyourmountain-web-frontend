@@ -35,8 +35,6 @@ export function Hero({
               LA MONTAGNA È PIÙ BELLA, CONDIVISA.
             </p>
             <h1 id="hero-title">
-              Fuori c’è un mondo.
-              <br />
               Trova la tua <em>montagna.</em>
             </h1>
             <p className="hero-description">

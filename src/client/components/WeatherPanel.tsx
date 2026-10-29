@@ -87,9 +87,6 @@ export function WeatherPanel({
           {!loading && <button onClick={onRetry}>Riprova ↗</button>}
         </div>
       )}
-      <p className="weather-caption">
-        Previsione al punto indicato. In quota le condizioni possono cambiare rapidamente.
-      </p>
     </aside>
   );
 }
