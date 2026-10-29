@@ -51,7 +51,7 @@
     "@types/react-dom": "^19.2.2",
     "miniflare": "5.20261019.2-beta",
     "prettier": "^3.9.10",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "wrangler": "^4.152.0"
   },
   "overrides": {
