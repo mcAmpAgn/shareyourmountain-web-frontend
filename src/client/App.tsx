@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { CatalogItem } from '../shared/contracts';
 import { api } from './lib/api';
-import { useCatalogNavigation } from './hooks/use-catalog-navigation';
+import { useCatalogNavigation, pageKind } from './hooks/use-catalog-navigation';
+import { CatalogTablePage } from './components/CatalogTablePage';
 import { formatNumber } from './lib/presentation';
 import { useResource } from './hooks/use-resource';
 import { useAdventures } from './hooks/use-adventures';
@@ -16,6 +17,7 @@ import { MapSection } from './components/MapSection';
 import { SignInModal } from './components/SignInModal';
 
 export function App() {
+  const page = pageKind();
   const meta = useResource(async (signal) => {
       const [stats, filters] = await Promise.all([api.stats(signal), api.filters(signal)]);
       return { stats, filters };
@@ -34,50 +36,69 @@ export function App() {
       <a className="skip-link" href="#main">
         Vai al contenuto
       </a>
-      <Header count={adventures.items.length} onAdventures={() => setShowAdventures(true)} />
+      <Header
+        count={adventures.items.length}
+        onAdventures={() => setShowAdventures(true)}
+        page={page}
+      />
       <main id="main">
-        <Hero filters={meta.data?.filters ?? null} onSearch={search} onOpen={open} />
-        <div className="intro-strip wrapper">
-          <p>
-            La tua passione. <strong>Un orizzonte senza confini.</strong>
-          </p>
-          <div>
-            <span>
-              <b>{meta.data ? formatNumber(meta.data.stats.mountains) : '—'}</b> cime da esplorare
-            </span>
-            <span>
-              <b>{meta.data ? formatNumber(meta.data.stats.routes) : '—'}</b> itinerari da
-              riscoprire
-            </span>
-            <a href="#community">Una storia da continuare ↗</a>
-          </div>
-        </div>
-        {meta.error && (
-          <div className="wrapper notice" role="alert">
-            {meta.error}
-            <button className="text-button" onClick={meta.retry}>
-              Riprova
-            </button>
-          </div>
+        {page ? (
+          <CatalogTablePage
+            kind={page}
+            query={query}
+            options={meta.data?.filters ?? null}
+            onChange={change}
+            onReset={reset}
+            onOpen={open}
+            adventures={adventures}
+          />
+        ) : (
+          <>
+            <Hero filters={meta.data?.filters ?? null} onSearch={search} onOpen={open} />
+            <div className="intro-strip wrapper">
+              <p>
+                La tua passione. <strong>Un orizzonte senza confini.</strong>
+              </p>
+              <div>
+                <span>
+                  <b>{meta.data ? formatNumber(meta.data.stats.mountains) : '—'}</b> cime da
+                  esplorare
+                </span>
+                <span>
+                  <b>{meta.data ? formatNumber(meta.data.stats.routes) : '—'}</b> itinerari da
+                  riscoprire
+                </span>
+                <a href="#community">Una storia da continuare ↗</a>
+              </div>
+            </div>
+            {meta.error && (
+              <div className="wrapper notice" role="alert">
+                {meta.error}
+                <button className="text-button" onClick={meta.retry}>
+                  Riprova
+                </button>
+              </div>
+            )}
+            {meta.data?.stats.totalMountains === 0 && (
+              <div className="wrapper notice">
+                L’archivio non è ancora stato importato. Segui le istruzioni di avvio nel README per
+                caricare il backup locale.
+              </div>
+            )}
+            <CatalogSection
+              query={query}
+              featured={featured}
+              options={meta.data?.filters ?? null}
+              adventures={adventures}
+              onChange={change}
+              onReset={reset}
+              onOpen={open}
+              onFeatured={navigation.inspire}
+            />
+            <MapSection onOpen={open} />
+            <StorySections onSearch={search} />
+          </>
         )}
-        {meta.data?.stats.totalMountains === 0 && (
-          <div className="wrapper notice">
-            L’archivio non è ancora stato importato. Segui le istruzioni di avvio nel README per
-            caricare il backup locale.
-          </div>
-        )}
-        <CatalogSection
-          query={query}
-          featured={featured}
-          options={meta.data?.filters ?? null}
-          adventures={adventures}
-          onChange={change}
-          onReset={reset}
-          onOpen={open}
-          onFeatured={navigation.inspire}
-        />
-        <MapSection onOpen={open} />
-        <StorySections onSearch={search} />
       </main>
       <Footer onInfo={setInfo} />
       {detail && (
@@ -144,6 +165,11 @@ export function App() {
                 <p>
                   Aprendo la mappa, il browser carica lo sfondo da OpenStreetMap. Non richiediamo la
                   tua posizione.
+                </p>
+                <p>
+                  La copertina carica una previsione da Open-Meteo per le coordinate del Cervino. Il
+                  meteo rimane nella sessione del browser per 15 minuti; non viene salvata la tua
+                  posizione.
                 </p>
               </>
             )}

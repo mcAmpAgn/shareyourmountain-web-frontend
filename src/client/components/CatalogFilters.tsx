@@ -4,32 +4,36 @@ export function CatalogFilters({
   options,
   onChange,
   onReset,
+  hideSearch = false,
 }: {
   query: CatalogQuery;
   options: Filters | null;
   onChange: (change: Partial<CatalogQuery>) => void;
   onReset: () => void;
+  hideSearch?: boolean;
 }) {
   const numeric = (value: string) => (value ? Number(value) : undefined);
   return (
     <div className="filters">
+      {!hideSearch && (
+        <label>
+          Cerca nell’archivio
+          <input
+            type="search"
+            value={query.q ?? ''}
+            maxLength={120}
+            onChange={(event) => onChange({ q: event.target.value || undefined })}
+            placeholder="Cima, itinerario o zona"
+          />
+        </label>
+      )}
       <label>
-        Cerca nell’archivio
-        <input
-          type="search"
-          value={query.q ?? ''}
-          maxLength={120}
-          onChange={(event) => onChange({ q: event.target.value || undefined })}
-          placeholder="Cima, itinerario o zona"
-        />
-      </label>
-      <label>
-        Gruppo montuoso
+        Catena montuosa
         <select
           value={query.rangeId ?? ''}
           onChange={(event) => onChange({ rangeId: numeric(event.target.value) })}
         >
-          <option value="">Tutti i gruppi</option>
+          <option value="">Tutte le catene</option>
           {options?.ranges.map((r) => (
             <option key={r.id} value={r.id}>
               {r.name}

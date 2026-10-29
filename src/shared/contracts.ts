@@ -34,6 +34,10 @@ export interface CatalogItem {
   longitude: number | null;
   mountainId: number | null;
   routeCount: number;
+  mountainGroup?: string;
+  parentMountain?: string;
+  lengthM?: number | null;
+  heightM?: number | null;
 }
 export interface CatalogDetail extends CatalogItem {
   description: string | null;

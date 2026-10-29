@@ -1,0 +1,11 @@
+# Featured landscape, weather and catalog tables
+
+The home cover uses the existing Cervino photographs. Weather coordinates, elevation, timezone and image paths are defined together in `src/client/lib/weather.ts`. Automatic mode uses the forecast's sunrise/sunset for the current date in Europe/Rome, with a timezone-aware 07:00–19:00 fallback if weather is unavailable. An appearance selector previews either image without changing weather values. A minute clock and visibility refresh allow an open page to change at sunset.
+
+Open-Meteo is called directly by the browser with fixed featured-place coordinates and no geolocation request, cookies or credentials. Current modelled temperature, condition, wind, humidity and daily extrema are displayed with source attribution and forecast time. Data is shared across concurrent component loads and cached in session storage for 15 minutes; network calls have a 10-second timeout. Errors show a retry control, never invented values. D1 is not used for weather.
+
+The free Open-Meteo endpoint is for non-commercial usage within the provider's limits. Review the [terms](https://open-meteo.com/en/terms) before commercial use; use an appropriate server-side provider integration if paid credentials are needed. API reference: https://open-meteo.com/en/docs. No paid subscription is configured by this feature.
+
+`/mountains` and `/routes` are dedicated, directly loadable SPA pages with URL-backed search and filters, sorting, 25-row pagination, details and favourites. Existing Node and Worker SPA fallbacks serve both routes. Mountain ranges (`mntn_mountainrange`) and groups (`mntn_mountaingroup`) have separate columns. Routes include the associated mountain, activity, original difficulty, length and ascent. Missing historical values are shown as a dash, not inferred.
+
+Selected-page hydration joins group and parent names in the shared repository. There are no per-row detail requests and no new database migration for these fields. The previously prepared catalog totals migration still must be applied before deploying this branch, which builds on that work. Public cache namespace v2 invalidates responses created before the additional DTO fields.
