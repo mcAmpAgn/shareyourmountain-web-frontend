@@ -82,7 +82,20 @@ After setup, check /api/health, /api/stats and a catalog search on the live doma
 
 On the Free plan, Cloudflare blocks queries after the account reaches its daily row-read allowance. Error 7500 is a quota failure, not evidence of missing tables or lost data. The allowance resets at midnight UTC (01:00 Berlin in winter, 02:00 in summer). Reimporting or redeploying does not reset the allowance. Billing changes require the account owner's decision.
 
-The catalog now counts and filters lightweight mountain/route candidates before loading card joins. Autocomplete skips a total-count query. Region/country filters use set membership rather than repeated correlated scans; readiness reads one mountain row. Applied migrations remain unchanged.
+The catalog filters lightweight mountain/route candidates before loading card joins. Autocomplete skips a total-count query. Region/country filters use set membership rather than repeated correlated scans; readiness reads one mountain row. Existing migrations remain unchanged.
+
+### Constant-cost catalog totals
+
+Migration `0004_catalog_totals.sql` backfills a single summary row from the existing catalog. Stats and unfiltered pagination read this row by primary key instead of counting every mountain and route. Insert, delete and status-update triggers maintain counts in the same transaction as catalog changes; failed imports roll back both data and counts. Use ordinary INSERT/UPDATE/DELETE or UPSERT for catalog maintenance, rather than SQLite REPLACE (whose implicit deletes depend on recursive-trigger settings). The summary is derived data and is not copied from a source database during public export. New imports build their own totals through the same triggers.
+
+Apply the migration **before deploying this code**:
+
+```powershell
+npm run d1:migrate:remote
+npm run deploy
+```
+
+For Node development, `npm run db:migrate` applies the matching local migration. Run the backfill after the daily quota resets if D1 is already blocking reads; it needs one initial catalog scan and does not reset the allowance. Do not reimport the catalog. The Worker integration test checks D1's reported `rows_read` for the summary lookup; ongoing filtered queries and cold-cache requests still consume reads.
 
 Workers cache successful public JSON reads only: stats/filters for one hour, lists/details for five minutes, map data for two minutes, and suggestions for one minute. The browser freshness window is capped at one minute. Edge Cache API availability depends on the deployment environment; a bounded isolate cache (64 entries, 8 MiB, maximum 512 KiB per entry) provides a fallback and coalesces concurrent identical requests. Keys preserve all query parameters, are separated by database in isolate memory, and use a versioned edge namespace. Invalidate that namespace when changing catalog response contracts; catalog import changes otherwise appear after TTL expiry.
 

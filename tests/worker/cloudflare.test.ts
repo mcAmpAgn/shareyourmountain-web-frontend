@@ -66,6 +66,18 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       await binding.batch(statements.map((s) => binding.prepare(s)));
     }
     await binding.batch(sqlStatements(exported.sql).map((s) => binding.prepare(s)));
+    const totals = await binding
+      .prepare(
+        'SELECT mountains,routes,total_mountains,total_routes FROM catalog_totals WHERE id=1',
+      )
+      .all();
+    assert.deepEqual(totals.results, [
+      { mountains: 2, routes: 2, total_mountains: 3, total_routes: 3 },
+    ]);
+    // D1 reports rows read, rather than elapsed time or the number of output columns.
+    assert.ok(totals.meta.rows_read <= 2, JSON.stringify(totals.meta));
+    const stats = await mf.dispatchFetch('https://example.test/api/stats');
+    assert.equal(((await stats.json()) as { mountains: number }).mountains, 2);
     const response = await mf.dispatchFetch('https://example.test/api/health');
     assert.equal(response.status, 200, await response.clone().text());
     assert.equal(((await response.json()) as { initialized: boolean }).initialized, true);

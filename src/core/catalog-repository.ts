@@ -137,12 +137,24 @@ export function createCatalogRepository(database: SqlDatabase) {
     return getByKeys(targets.map((row) => row.key));
   }
   async function list(query: CatalogQuery): Promise<CatalogPage> {
+    const unfiltered =
+      !query.q &&
+      [
+        query.activityId,
+        query.rangeId,
+        query.mountainId,
+        query.minElevation,
+        query.countryId,
+        query.regionId,
+      ].every((value) => value === undefined);
     const { condition, params } = await selection(query),
-      total = (
-        (await database
-          .prepare('SELECT count(*) AS n FROM (' + candidates + ') i WHERE ' + condition)
-          .get(...params)) as { n: number }
-      ).n;
+      total = unfiltered
+        ? await activeTotal(query.kind)
+        : (
+            (await database
+              .prepare('SELECT count(*) AS n FROM (' + candidates + ') i WHERE ' + condition)
+              .get(...params)) as { n: number }
+          ).n;
     const pageSize = query.pageSize ?? 12,
       pages = Math.max(1, Math.ceil(total / pageSize)),
       page = Math.min(query.page ?? 1, pages);
@@ -158,6 +170,15 @@ export function createCatalogRepository(database: SqlDatabase) {
       pages,
     };
   }
+  async function activeTotal(kind?: ItemKind) {
+    const column =
+      kind === 'mountain' ? 'mountains' : kind === 'route' ? 'routes' : 'mountains + routes';
+    return (
+      (await database.prepare(`SELECT ${column} AS n FROM catalog_totals WHERE id=1`).get()) as {
+        n: number;
+      }
+    ).n;
+  }
   async function get(kind: ItemKind, id: number) {
     const row = (await database
       .prepare('SELECT * FROM catalog_items WHERE kind=? AND id=? AND active=1')
@@ -167,7 +188,7 @@ export function createCatalogRepository(database: SqlDatabase) {
   async function stats(): Promise<Stats> {
     const counts = (await database
       .prepare(
-        'SELECT (SELECT count(*) FROM mountain WHERE mntn_status=1) mountains,(SELECT count(*) FROM route WHERE route_status=1) routes,(SELECT count(*) FROM mountain) totalMountains,(SELECT count(*) FROM route) totalRoutes',
+        'SELECT mountains,routes,total_mountains AS totalMountains,total_routes AS totalRoutes FROM catalog_totals WHERE id=1',
       )
       .get()) as Record<string, number>;
     const batch = (await database
