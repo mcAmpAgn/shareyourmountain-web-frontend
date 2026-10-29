@@ -15,8 +15,15 @@
   text-align: left;
   z-index: 30;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.autocomplete-panel[data-placement='above'] {
+  top: auto;
+  bottom: calc(100% + 12px);
 }
 .autocomplete-status {
+  flex-shrink: 0;
   padding: 12px 16px;
   margin: 0;
   background: #f5f7f1;
@@ -28,7 +35,8 @@
   padding: 4px 0;
   margin: 0;
   list-style: none;
-  max-height: 300px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 .autocomplete-panel li {
@@ -66,6 +74,7 @@
   line-height: 1.5;
 }
 .autocomplete-all {
+  flex-shrink: 0;
   width: 100%;
   border: 0;
   padding: 14px 16px;
@@ -93,9 +102,6 @@
     top: calc(100% + 8px);
     width: 100%;
     max-width: 100%;
-  }
-  .autocomplete-panel ul {
-    max-height: 240px;
   }
   .autocomplete-panel li {
     gap: 8px;
