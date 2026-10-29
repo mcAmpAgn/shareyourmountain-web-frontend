@@ -254,6 +254,14 @@ export function createCatalogRepository(database: SqlDatabase) {
     get,
     stats,
     filters,
+    photoReference: async (id: number) =>
+      (await database
+        .prepare(
+          `SELECT m.id,m.mntn_name AS name,
+      (SELECT wikipedia_url FROM mntn_dbpedia d WHERE d.mountain_id=m.id ORDER BY language_id LIMIT 1) AS wikipedia_url
+      FROM mountain m WHERE m.id=? AND m.mntn_status=1`,
+        )
+        .get(id)) as import('./mountain-gallery.js').MountainPhotoReference | undefined,
     rawMountain: async (id: number) =>
       (await database.prepare('SELECT * FROM mountain WHERE id=?').get(id)) as
         Record<string, unknown> | undefined,

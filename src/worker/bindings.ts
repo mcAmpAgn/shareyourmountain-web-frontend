@@ -5,4 +5,8 @@ export interface WorkerEnv {
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;
   ACCESS_LOGIN_PROVIDER?: string;
+  INSTAGRAM_ACCESS_TOKEN?: string;
+  INSTAGRAM_USER_ID?: string;
+  INSTAGRAM_API_VERSION?: string;
+  INSTAGRAM_MOUNTAIN_HASHTAGS?: string;
 }

@@ -1,4 +1,19 @@
 export type ItemKind = 'mountain' | 'route';
+export type PhotoProvider = 'commons' | 'instagram';
+export interface MountainPhoto {
+  id: string;
+  url: string;
+  title: string;
+  sourceUrl: string;
+  author: string;
+  license: string;
+  licenseUrl: string | null;
+}
+export interface MountainGallery {
+  provider: PhotoProvider;
+  status: 'ready' | 'empty' | 'unavailable' | 'not_configured';
+  images: MountainPhoto[];
+}
 export interface SuggestionQuery {
   q: string;
   kind?: ItemKind;

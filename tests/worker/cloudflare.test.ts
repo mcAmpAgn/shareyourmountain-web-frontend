@@ -82,6 +82,23 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
     assert.equal(response.status, 200, await response.clone().text());
     assert.equal(((await response.json()) as { initialized: boolean }).initialized, true);
     const listed = await mf.dispatchFetch('https://example.test/api/catalog?q=Tasch');
+    assert.equal(
+      (
+        (await mf
+          .dispatchFetch('https://example.test/api/mountains/10/photos?provider=instagram')
+          .then((response) => response.json())) as { status: string }
+      ).status,
+      'not_configured',
+    );
+    assert.equal(
+      (await mf.dispatchFetch('https://example.test/api/mountains/999/photos')).status,
+      404,
+    );
+    assert.equal(
+      (await mf.dispatchFetch('https://example.test/api/mountains/10/photos?provider=invalid'))
+        .status,
+      400,
+    );
     assert.equal(((await listed.json()) as { total: number }).total, 1);
     const suggestions = (await mf
       .dispatchFetch('https://example.test/api/suggestions?q=Cerv')

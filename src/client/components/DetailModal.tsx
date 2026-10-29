@@ -5,6 +5,7 @@ import { useResource } from '../hooks/use-resource';
 import { api } from '../lib/api';
 import { landscape, formatNumber, mapURL } from '../lib/presentation';
 import { Modal } from './Modal';
+import { MountainMedia } from './MountainMedia';
 export function DetailModal({
   target,
   adventures,
@@ -24,17 +25,21 @@ export function DetailModal({
   const item = result.data;
   const image = item ? landscape(item) : null;
   return (
-    <Modal titleId="detail-title" onClose={onClose}>
+    <Modal titleId="detail-title" onClose={onClose} className="detail-dialog">
       {item && image ? (
         <>
-          <img
-            className="detail-image"
-            src={'/assets/' + image.file}
-            alt={image.alt + (image.illustrative ? ' · foto illustrativa' : '')}
-          />
+          {item.kind === 'mountain' ? (
+            <MountainMedia item={item} />
+          ) : (
+            <img
+              className="detail-image"
+              src={'/assets/' + image.file}
+              alt={image.alt + (image.illustrative ? ' · foto illustrativa' : '')}
+            />
+          )}
           <div className="detail-body">
             <p className="eyebrow">{item.activity || 'CIME E MONTAGNE'} · ARCHIVIO 2017</p>
-            <h2 id="detail-title">{item.name}</h2>
+            {item.kind !== 'mountain' && <h2 id="detail-title">{item.name}</h2>}
             <dl className="detail-facts">
               <div>
                 <dt>Quota</dt>
@@ -73,7 +78,9 @@ export function DetailModal({
                 </>
               )}
             </dl>
-            {image.illustrative && <p>La foto di copertina illustra il paesaggio alpino.</p>}
+            {image.illustrative && item.kind !== 'mountain' && (
+              <p>La foto di copertina illustra il paesaggio alpino.</p>
+            )}
             {item.description && <p>{item.description}</p>}
             {item.lengthDescription && <p>{item.lengthDescription}</p>}
             <p>

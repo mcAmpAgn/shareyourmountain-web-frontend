@@ -6,7 +6,12 @@ import { createApp, errorHandler } from './http/app.js';
 const config = loadConfig(),
   db = openDatabase(config.databasePath);
 migrate(db);
-const app = createApp(db);
+const app = createApp(db, {
+  instagramToken: process.env.INSTAGRAM_ACCESS_TOKEN,
+  instagramUserId: process.env.INSTAGRAM_USER_ID,
+  instagramVersion: process.env.INSTAGRAM_API_VERSION,
+  instagramHashtags: process.env.INSTAGRAM_MOUNTAIN_HASHTAGS,
+});
 let vite: Awaited<ReturnType<(typeof import('vite'))['createServer']>> | undefined;
 if (config.production) {
   app.use(express.static(path.resolve('dist/client')));

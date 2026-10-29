@@ -171,6 +171,11 @@ export function App() {
                   meteo rimane nella sessione del browser per 15 minuti; non viene salvata la tua
                   posizione.
                 </p>
+                <p>
+                  Le gallerie delle montagne caricano fotografie da Wikimedia Commons e, aprendo la
+                  scheda Instagram, dai server di Meta quando la galleria è disponibile. Autore,
+                  licenza e collegamenti alla fonte sono mostrati accanto alle foto.
+                </p>
               </>
             )}
           </div>
