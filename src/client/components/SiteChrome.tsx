@@ -1,9 +1,17 @@
 import { useState } from 'react';
-export function Header({ count, onAdventures }: { count: number; onAdventures: () => void }) {
+export function Header({
+  count,
+  onAdventures,
+  page,
+}: {
+  count: number;
+  onAdventures: () => void;
+  page?: 'mountain' | 'route';
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <header className="site-header">
-      <a className="brand" href="#" aria-label="Share Your Mountain, home">
+    <header className={`site-header ${page ? 'site-header-solid' : ''}`}>
+      <a className="brand" href="/" aria-label="Share Your Mountain, home">
         <img src="/assets/logo-white.png" alt="Share Your Mountain" width="507" height="53" />
       </a>
       <button
@@ -21,12 +29,25 @@ export function Header({ count, onAdventures }: { count: number; onAdventures: (
         aria-label="Menu principale"
         onClick={() => setOpen(false)}
       >
-        <a className="nav-active" href="#explore">
+        <a className={!page ? 'nav-active' : ''} href="/#explore">
           Esplora
         </a>
-        <a href="#destinations">Destinazioni</a>
-        <a href="#map">Mappa</a>
-        <a href="#community">Il progetto</a>
+        <a
+          href="/mountains"
+          className={page === 'mountain' ? 'nav-active' : ''}
+          aria-current={page === 'mountain' ? 'page' : undefined}
+        >
+          Montagne
+        </a>
+        <a
+          href="/routes"
+          className={page === 'route' ? 'nav-active' : ''}
+          aria-current={page === 'route' ? 'page' : undefined}
+        >
+          Itinerari
+        </a>
+        <a href="/#map">Mappa</a>
+        <a href="/#community">Il progetto</a>
       </nav>
       <button className="saved-button" onClick={onAdventures}>
         <span aria-hidden="true">♡</span> Le mie avventure <span>{count}</span>
@@ -38,7 +59,7 @@ export function Footer({ onInfo }: { onInfo: (kind: 'data' | 'privacy') => void 
   return (
     <footer className="wrapper">
       <div className="footer-top">
-        <a href="#" className="footer-brand">
+        <a href="/" className="footer-brand">
           <img src="/assets/logo-white.png" width="507" height="53" alt="Share Your Mountain" />
         </a>
         <p>
@@ -47,8 +68,8 @@ export function Footer({ onInfo }: { onInfo: (kind: 'data' | 'privacy') => void 
           Condividi la tua passione.
         </p>
         <div>
-          <a href="#explore">Esplora</a>
-          <a href="#destinations">Destinazioni</a>
+          <a href="/mountains">Montagne</a>
+          <a href="/routes">Itinerari</a>
           <button onClick={() => onInfo('data')}>Dati e fonti</button>
         </div>
       </div>

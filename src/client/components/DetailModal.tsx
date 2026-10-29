@@ -41,8 +41,12 @@ export function DetailModal({
                 <dd>{item.elevationM ? formatNumber(item.elevationM) + ' m' : 'Non indicata'}</dd>
               </div>
               <div>
-                <dt>Gruppo montuoso</dt>
+                <dt>Catena montuosa</dt>
                 <dd>{item.range || 'Non indicato'}</dd>
+              </div>
+              <div>
+                <dt>Gruppo montuoso</dt>
+                <dd>{item.mountainGroup || 'Non indicato'}</dd>
               </div>
               <div>
                 <dt>{item.kind === 'route' ? 'Gradi originali' : 'Paesi'}</dt>

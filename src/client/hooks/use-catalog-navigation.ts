@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { CatalogItem, CatalogQuery, ItemKind } from '../../shared/contracts';
 import { queryString } from '../lib/api';
+export function pageKind(): ItemKind | undefined {
+  return location.pathname.replace(/\/$/, '') === '/mountains'
+    ? 'mountain'
+    : location.pathname.replace(/\/$/, '') === '/routes'
+      ? 'route'
+      : undefined;
+}
 function readQuery(): CatalogQuery {
   const params = new URLSearchParams(location.search),
     query: CatalogQuery = {};
@@ -22,6 +29,7 @@ function readQuery(): CatalogQuery {
       query[key] = value;
   }
   if (params.get('sort') === 'elevation') query.sort = 'elevation';
+  if (pageKind()) query.kind = pageKind();
   return query;
 }
 function readDetail() {
@@ -31,7 +39,7 @@ function readDetail() {
 }
 export function useCatalogNavigation() {
   const [query, setQuery] = useState<CatalogQuery>(readQuery),
-    [featured, setFeatured] = useState(() => !location.search),
+    [featured, setFeatured] = useState(() => !pageKind() && !location.search),
     [detail, setDetail] = useState(readDetail);
   useEffect(() => {
     const search = new URLSearchParams(queryString(query));
@@ -49,7 +57,7 @@ export function useCatalogNavigation() {
     const hash = () => setDetail(readDetail());
     const back = () => {
       setQuery(readQuery());
-      setFeatured(!location.search);
+      setFeatured(!pageKind() && !location.search);
       setDetail(readDetail());
     };
     window.addEventListener('hashchange', hash);
@@ -80,12 +88,17 @@ export function useCatalogNavigation() {
     },
     change(patch: Partial<CatalogQuery>) {
       setFeatured(false);
-      setQuery((previous) => ({ ...previous, ...patch, page: patch.page ?? 1 }));
+      setQuery((previous) => ({
+        ...previous,
+        ...patch,
+        ...(pageKind() ? { kind: pageKind() } : {}),
+        page: patch.page ?? 1,
+      }));
       if (patch.page) document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' });
     },
     reset() {
       setFeatured(false);
-      setQuery({});
+      setQuery(pageKind() ? { kind: pageKind() } : {});
     },
     inspire() {
       setQuery({});

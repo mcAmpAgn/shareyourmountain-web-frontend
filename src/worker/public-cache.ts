@@ -43,7 +43,7 @@ export function createPublicCache(
     if (!pools.has(database)) pools.set(database, pool);
     const cacheURL = new URL(request.url);
     cacheURL.searchParams.sort();
-    cacheURL.pathname = '/__sym_catalog_cache/v1' + cacheURL.pathname;
+    cacheURL.pathname = '/__sym_catalog_cache/v2' + cacheURL.pathname;
     const key = cacheURL.href;
     const entry = pool.entries.get(key);
     if (entry && entry.expires > now()) {

@@ -15,6 +15,28 @@ import { getTableConfig } from 'drizzle-orm/sqlite-core';
 import * as typedSchema from '../src/server/db/schema.js';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+test('catalog pages hydrate distinct mountain group, parent and route metrics without detail requests', async () => {
+  const db = fixtureDatabase();
+  try {
+    db.sqlite.exec(
+      "INSERT INTO mntn_mountaingroup(id,mntnGroup_name,mntnRange_id) VALUES (1,'Gruppo del Cervino',1); UPDATE mountain SET mntnGroup_id=1 WHERE id=10; UPDATE route SET route_length=6500,route_height=1200 WHERE id=2;",
+    );
+    const repository = createCatalogRepository(db);
+    const mountains = await repository.list({ kind: 'mountain' });
+    const peak = mountains.items.find((item) => item.id === 10)!;
+    assert.equal(peak.range, 'Alpi Pennine');
+    assert.equal(peak.mountainGroup, 'Gruppo del Cervino');
+    const routes = await repository.list({ kind: 'route' });
+    const route = routes.items.find((item) => item.id === 2)!;
+    assert.equal(route.parentMountain, 'Cervino');
+    assert.equal(route.mountainGroup, 'Gruppo del Cervino');
+    assert.equal(route.lengthM, 6500);
+    assert.equal(route.heightM, 1200);
+    assert.equal((await repository.get('route', 2))?.mountainGroup, route.mountainGroup);
+  } finally {
+    db.sqlite.close();
+  }
+});
 test('migration checksums tolerate line-ending conversion but still reject changed SQL', () => {
   const db = fixtureDatabase();
   try {

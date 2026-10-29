@@ -25,6 +25,10 @@ export interface CatalogRow {
   mountain_id: number | null;
   route_count: number;
   active: number;
+  mountain_group?: string;
+  parent_mountain?: string;
+  length_m?: number | null;
+  height_m?: number | null;
 }
 export function itemDTO(row: CatalogRow): CatalogItem {
   return {
@@ -43,9 +47,21 @@ export function itemDTO(row: CatalogRow): CatalogItem {
     longitude: row.longitude,
     mountainId: row.mountain_id,
     routeCount: row.route_count,
+    mountainGroup: row.mountain_group ?? '',
+    parentMountain: row.parent_mountain ?? '',
+    lengthM: row.length_m ?? null,
+    heightM: row.height_m ?? null,
   };
 }
 export function createCatalogRepository(database: SqlDatabase) {
+  // Extra table columns are hydrated for the selected page only, never one request per row.
+  const cards = `SELECT i.*,coalesce(g.mntnGroup_name,'') AS mountain_group,
+    CASE WHEN i.kind='route' THEN coalesce(m.mntn_name,'') ELSE '' END AS parent_mountain,
+    r.route_length AS length_m,r.route_height AS height_m
+    FROM catalog_items i
+    LEFT JOIN route r ON i.kind='route' AND r.id=i.id
+    LEFT JOIN mountain m ON m.id=CASE WHEN i.kind='mountain' THEN i.id ELSE i.mountain_id END
+    LEFT JOIN mntn_mountaingroup g ON g.id=coalesce(r.mntnGroup_id,m.mntnGroup_id)`;
   // Filtering, sorting and counts do not need card joins, country aggregation or route counts.
   const candidates = `SELECT 'm-'||m.id AS key,m.id,'mountain' AS kind,m.mntn_name AS name,
     m.mntn_altitude AS elevation_m,coalesce(m.mntnRange_id,0) AS range_id,NULL AS region_id,
@@ -110,7 +126,7 @@ export function createCatalogRepository(database: SqlDatabase) {
           .filter((id) => Number.isSafeInteger(id) && id <= 2147483647);
         if (!ids.length) continue;
         parts.push(
-          `SELECT * FROM catalog_items WHERE kind='${kind}' AND active=1 AND id IN (${ids.map(() => '?').join(',')})`,
+          `${cards} WHERE i.kind='${kind}' AND i.active=1 AND i.id IN (${ids.map(() => '?').join(',')})`,
         );
         params.push(...ids);
       }
@@ -181,7 +197,7 @@ export function createCatalogRepository(database: SqlDatabase) {
   }
   async function get(kind: ItemKind, id: number) {
     const row = (await database
-      .prepare('SELECT * FROM catalog_items WHERE kind=? AND id=? AND active=1')
+      .prepare(cards + ' WHERE i.kind=? AND i.id=? AND i.active=1')
       .get(kind, id)) as CatalogRow | undefined;
     return row ? itemDTO(row) : null;
   }
