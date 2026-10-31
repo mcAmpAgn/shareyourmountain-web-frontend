@@ -1,3 +1,4 @@
+import { RecordLabel } from './RecordLabel';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api';
 import { useResource } from '../hooks/use-resource';
@@ -205,7 +206,19 @@ export function ClassificationPage() {
                       </small>
                     </th>
                     <td>
-                      <span className="classification-level">{row.level}</span>
+                      <RecordLabel
+                        tone={
+                          row.kind === 'group'
+                            ? 'group'
+                            : row.level === 'Sezione'
+                              ? 'section'
+                              : row.level === 'Sottosezione'
+                                ? 'subsection'
+                                : 'range'
+                        }
+                      >
+                        {row.level}
+                      </RecordLabel>
                     </td>
                     <td>
                       <div className="classification-path">

@@ -1,3 +1,4 @@
+import { RecordLabel } from './RecordLabel';
 import { useEffect, useState } from 'react';
 import type { CatalogItem, CatalogQuery, Filters, ItemKind } from '../../shared/contracts';
 import type { AdventuresState } from '../hooks/use-adventures';
@@ -263,7 +264,10 @@ export function CatalogTablePage({
                         <span aria-hidden="true">↗</span>
                       </button>
                       <small className="table-record">
-                        {mountain ? 'CIMA' : 'ITINERARIO'} #{item.id}
+                        <RecordLabel tone={mountain ? 'mountain' : 'route'}>
+                          {mountain ? 'CIMA' : 'ITINERARIO'}
+                        </RecordLabel>{' '}
+                        #{item.id}
                       </small>
                     </th>
                     {!mountain && (
@@ -280,8 +284,16 @@ export function CatalogTablePage({
                     <td className="table-elevation">{metres(item.elevationM)}</td>
                     {mountain ? (
                       <>
-                        <td>{item.range || '—'}</td>
-                        <td>{item.mountainGroup || '—'}</td>
+                        <td>
+                          {item.range ? <RecordLabel tone="range">{item.range}</RecordLabel> : '—'}
+                        </td>
+                        <td>
+                          {item.mountainGroup ? (
+                            <RecordLabel tone="group">{item.mountainGroup}</RecordLabel>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
                         <td>{item.countries.join(' · ') || '—'}</td>
                         <td>
                           <button
@@ -314,8 +326,14 @@ export function CatalogTablePage({
                           )}
                         </td>
                         <td>
-                          {item.range || '—'}
-                          <small>{item.mountainGroup || '—'}</small>
+                          {item.range ? <RecordLabel tone="range">{item.range}</RecordLabel> : '—'}
+                          <small>
+                            {item.mountainGroup ? (
+                              <RecordLabel tone="group">{item.mountainGroup}</RecordLabel>
+                            ) : (
+                              '—'
+                            )}
+                          </small>
                         </td>
                         <td>
                           {item.region || '—'}

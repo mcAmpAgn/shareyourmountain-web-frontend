@@ -32,7 +32,11 @@ export function CatalogCard({
             alt={image.alt + (image.illustrative ? ' · foto illustrativa' : '')}
             loading="lazy"
           />
-          <span className="card-badge activity-label" data-activity={item.activityId ?? undefined}>
+          <span
+            className="card-badge activity-label"
+            data-activity={item.activityId ?? undefined}
+            data-record-tone={item.kind === 'mountain' ? 'mountain' : undefined}
+          >
             {item.activity || 'CIME E MONTAGNE'}
           </span>
           {image.illustrative && <span className="card-alt">Foto illustrativa</span>}
