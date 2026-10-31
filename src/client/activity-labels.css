@@ -1,0 +1,71 @@
+/* Stable legacy activity IDs keep the same palette in tables and cards.
+   Labels remain explicit: colour is an additional visual cue, not a difficulty grade. */
+.activity-label {
+  background: var(--activity-bg, #edf0f4);
+  color: var(--activity-fg, #39485c);
+  border: 1px solid var(--activity-border, #39485c24);
+  font-weight: 600;
+}
+.activity-label[data-activity='1'] {
+  --activity-bg: #edf0f4;
+  --activity-fg: #39485c;
+  --activity-border: #39485c30;
+}
+.activity-label[data-activity='2'],
+.activity-label[data-activity='4'] {
+  --activity-bg: #eee7fa;
+  --activity-fg: #593382;
+  --activity-border: #59338230;
+}
+.activity-label[data-activity='3'] {
+  --activity-bg: #f9e3ef;
+  --activity-fg: #873656;
+  --activity-border: #87365630;
+}
+.activity-label[data-activity='5'],
+.activity-label[data-activity='17'] {
+  --activity-bg: #fbe7dc;
+  --activity-fg: #903d22;
+  --activity-border: #903d2230;
+}
+.activity-label[data-activity='6'],
+.activity-label[data-activity='14'],
+.activity-label[data-activity='15'] {
+  --activity-bg: #e3f1e5;
+  --activity-fg: #285c36;
+  --activity-border: #285c3630;
+}
+.activity-label[data-activity='7'],
+.activity-label[data-activity='16'] {
+  --activity-bg: #fff0cc;
+  --activity-fg: #795400;
+  --activity-border: #79540030;
+}
+.activity-label[data-activity='8'],
+.activity-label[data-activity='10'] {
+  --activity-bg: #e1edfb;
+  --activity-fg: #285585;
+  --activity-border: #28558530;
+}
+.activity-label[data-activity='9'] {
+  --activity-bg: #e8e8fc;
+  --activity-fg: #48438c;
+  --activity-border: #48438c30;
+}
+.activity-label[data-activity='11'] {
+  --activity-bg: #dcf1ec;
+  --activity-fg: #216657;
+  --activity-border: #21665730;
+}
+.activity-label[data-activity='12'],
+.activity-label[data-activity='13'],
+.activity-label[data-activity='18'] {
+  --activity-bg: #dff2f6;
+  --activity-fg: #226273;
+  --activity-border: #22627330;
+}
+.activity-label[data-activity='19'] {
+  --activity-bg: #eef1d6;
+  --activity-fg: #52621f;
+  --activity-border: #52621f30;
+}

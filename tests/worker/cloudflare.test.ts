@@ -131,6 +131,14 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       (await mf.dispatchFetch('https://example.test/api/catalog?groupId=-1')).status,
       400,
     );
+    for (const path of ['/mountains/10', '/routes/2']) {
+      const page = await mf.dispatchFetch('https://example.test' + path, {
+        headers: { Accept: 'text/html' },
+      });
+      assert.equal(page.status, 200);
+      assert.match(page.headers.get('Content-Type') ?? '', /text\/html/);
+      assert.match(await page.text(), /id="root"/);
+    }
     const missing = await mf.dispatchFetch('https://example.test/api/not-found');
     assert.equal(missing.status, 404);
     assert.match(missing.headers.get('Content-Type') ?? '', /json/);

@@ -11,6 +11,8 @@ import { Header, Footer } from './components/SiteChrome';
 import { Hero } from './components/Hero';
 import { CatalogSection } from './components/CatalogSection';
 import { DetailModal } from './components/DetailModal';
+import { DetailPage } from './components/DetailPage';
+import { detailTarget, detailPath } from './lib/detail-navigation';
 import { AdventuresModal } from './components/AdventuresModal';
 import { StorySections } from './components/StorySections';
 import { Modal } from './components/Modal';
@@ -20,6 +22,7 @@ import { SignInModal } from './components/SignInModal';
 export function App() {
   const classificationPage = location.pathname.replace(/\/$/, '') === '/soiusa';
   const page = pageKind();
+  const pageTarget = detailTarget(location.pathname);
   const meta = useResource(async (signal) => {
       const [stats, filters] = await Promise.all([api.stats(signal), api.filters(signal)]);
       return { stats, filters };
@@ -31,6 +34,10 @@ export function App() {
   const [info, setInfo] = useState<'data' | 'privacy' | null>(null);
   function open(item: Pick<CatalogItem, 'kind' | 'id'>) {
     setShowAdventures(false);
+    if (pageTarget) {
+      location.href = detailPath(item.kind, item.id);
+      return;
+    }
     navigation.open(item);
   }
   return (
@@ -41,10 +48,12 @@ export function App() {
       <Header
         count={adventures.items.length}
         onAdventures={() => setShowAdventures(true)}
-        page={classificationPage ? 'soiusa' : page}
+        page={classificationPage ? 'soiusa' : (pageTarget?.kind ?? page)}
       />
       <main id="main">
-        {classificationPage ? (
+        {pageTarget ? (
+          <DetailPage target={pageTarget} adventures={adventures} />
+        ) : classificationPage ? (
           <ClassificationPage />
         ) : page ? (
           <CatalogTablePage
@@ -105,7 +114,7 @@ export function App() {
         )}
       </main>
       <Footer onInfo={setInfo} />
-      {detail && (
+      {detail && !pageTarget && (
         <DetailModal
           key={detail.kind + detail.id}
           target={detail}

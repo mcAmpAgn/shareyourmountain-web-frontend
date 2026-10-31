@@ -87,13 +87,7 @@
   font-size: 14px;
   font-weight: 600;
 }
-.classification-level {
-  font-size: 11px;
-  background: #edf0e8;
-  padding: 7px 10px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
+
 .classification-path {
   display: flex;
   flex-wrap: wrap;

@@ -1,0 +1,55 @@
+.record-label {
+  display: inline-block;
+  padding: 4px 8px;
+  border: 1px solid #39485c30;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: normal;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: #edf0f4;
+  color: #39485c;
+}
+.record-label[data-record-tone='mountain'],
+.card-badge[data-record-tone='mountain'] {
+  background: #e3f1e5;
+  color: #285c36;
+  border-color: #285c3630;
+}
+.record-label[data-record-tone='route'],
+.card-badge[data-record-tone='route'] {
+  background: #fbe7dc;
+  color: #903d22;
+  border-color: #903d2230;
+}
+.record-label[data-record-tone='range'],
+.card-badge[data-record-tone='range'] {
+  background: #e1edfb;
+  color: #285585;
+  border-color: #28558530;
+}
+.record-label[data-record-tone='section'],
+.card-badge[data-record-tone='section'] {
+  background: #e8e8fc;
+  color: #48438c;
+  border-color: #48438c30;
+}
+.record-label[data-record-tone='subsection'],
+.card-badge[data-record-tone='subsection'] {
+  background: #dff2f6;
+  color: #226273;
+  border-color: #22627330;
+}
+.record-label[data-record-tone='group'],
+.card-badge[data-record-tone='group'] {
+  background: #eee7fa;
+  color: #593382;
+  border-color: #59338230;
+}
+.table-record .record-label {
+  font-size: 9px;
+  padding: 2px 6px;
+  margin-right: 5px;
+}

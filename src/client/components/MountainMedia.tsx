@@ -5,7 +5,14 @@ import { useResource } from '../hooks/use-resource';
 import { landscape, formatNumber } from '../lib/presentation';
 import './mountain-detail.css';
 
-export function MountainMedia({ item }: { item: CatalogDetail }) {
+export function MountainMedia({
+  item,
+  fullPage = false,
+}: {
+  item: CatalogDetail;
+  fullPage?: boolean;
+}) {
+  const Heading = fullPage ? 'h1' : 'h2';
   const [provider, setProvider] = useState<PhotoProvider>('commons');
   const [selected, setSelected] = useState(0);
   const result = useResource(
@@ -40,7 +47,7 @@ export function MountainMedia({ item }: { item: CatalogDetail }) {
           <p className="eyebrow light">
             {item.range || 'CIME E MONTAGNE'} · {item.countries.join(' / ')}
           </p>
-          <h2 id="detail-title">{item.name}</h2>
+          <Heading id="detail-title">{item.name}</Heading>
           {item.elevationM != null && <span>↟ {formatNumber(item.elevationM)} m</span>}
         </div>
         {images.length > 1 && (
