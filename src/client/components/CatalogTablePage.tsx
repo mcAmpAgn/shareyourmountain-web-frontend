@@ -268,7 +268,12 @@ export function CatalogTablePage({
                     </th>
                     {!mountain && (
                       <td>
-                        <span className="table-activity">{item.activity || '—'}</span>
+                        <span
+                          className="table-activity activity-label"
+                          data-activity={item.activityId ?? undefined}
+                        >
+                          {item.activity || '—'}
+                        </span>
                         <small>{item.difficultyRaw || 'Difficoltà non indicata'}</small>
                       </td>
                     )}
