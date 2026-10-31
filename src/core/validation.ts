@@ -1,4 +1,7 @@
 import { z } from 'zod';
+export const galleryQuery = z
+  .object({ provider: z.enum(['commons', 'instagram']).default('commons') })
+  .strict();
 export const signInQuery = z
   .object({
     kind: z.enum(['mountain', 'route']).optional(),
@@ -17,6 +20,7 @@ export const catalogQuery = z
     kind: z.enum(['mountain', 'route']).optional(),
     activityId: id.optional(),
     rangeId: id.optional(),
+    groupId: id.optional(),
     countryId: id.optional(),
     regionId: id.optional(),
     mountainId: id.optional(),

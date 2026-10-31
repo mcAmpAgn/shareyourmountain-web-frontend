@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ClassificationPage } from './components/ClassificationPage';
 import type { CatalogItem } from '../shared/contracts';
 import { api } from './lib/api';
 import { useCatalogNavigation, pageKind } from './hooks/use-catalog-navigation';
@@ -17,6 +18,7 @@ import { MapSection } from './components/MapSection';
 import { SignInModal } from './components/SignInModal';
 
 export function App() {
+  const classificationPage = location.pathname.replace(/\/$/, '') === '/soiusa';
   const page = pageKind();
   const meta = useResource(async (signal) => {
       const [stats, filters] = await Promise.all([api.stats(signal), api.filters(signal)]);
@@ -39,10 +41,12 @@ export function App() {
       <Header
         count={adventures.items.length}
         onAdventures={() => setShowAdventures(true)}
-        page={page}
+        page={classificationPage ? 'soiusa' : page}
       />
       <main id="main">
-        {page ? (
+        {classificationPage ? (
+          <ClassificationPage />
+        ) : page ? (
           <CatalogTablePage
             kind={page}
             query={query}
@@ -170,6 +174,11 @@ export function App() {
                   La copertina carica una previsione da Open-Meteo per le coordinate del Cervino. Il
                   meteo rimane nella sessione del browser per 15 minuti; non viene salvata la tua
                   posizione.
+                </p>
+                <p>
+                  Le gallerie delle montagne caricano fotografie da Wikimedia Commons e, aprendo la
+                  scheda Instagram, dai server di Meta quando la galleria è disponibile. Autore,
+                  licenza e collegamenti alla fonte sono mostrati accanto alle foto.
                 </p>
               </>
             )}

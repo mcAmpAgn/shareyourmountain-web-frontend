@@ -6,6 +6,7 @@ import { createAdventureRepository } from '../repositories/adventure-repository.
 import { createCatalogService } from '../services/catalog-service.js';
 import { createAdventureService, ApplicationError } from '../services/adventure-service.js';
 import * as validation from './validation.js';
+import { createMountainGallery, type InstagramGalleryConfig } from '../../core/mountain-gallery.js';
 
 const localProfileOnly: RequestHandler = (req, res, next) => {
   const ip = req.socket.remoteAddress,
@@ -30,7 +31,7 @@ const localProfileOnly: RequestHandler = (req, res, next) => {
   }
   next();
 };
-export function createApp(db: AppDatabase) {
+export function createApp(db: AppDatabase, galleryConfig: InstagramGalleryConfig = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.use((_req, res, next) => {
@@ -46,12 +47,21 @@ export function createApp(db: AppDatabase) {
   const repository = createCatalogRepository(db),
     catalog = createCatalogService(repository),
     adventures = createAdventureService(createAdventureRepository(db), repository);
+  const gallery = createMountainGallery(galleryConfig);
+  app.get('/api/mountains/:id/photos', async (req, res) => {
+    const id = validation.catalogId.parse(req.params.id);
+    const { provider } = validation.galleryQuery.parse(req.query);
+    const mountain = await repository.photoReference(id);
+    if (!mountain) throw new ApplicationError(404, 'Questa montagna non è disponibile.');
+    res.json(await gallery.load(mountain, provider));
+  });
   app.get('/api/capabilities', (_req, res) =>
     res.json({ profileMode: 'local', signInUrl: null, signInProvider: null, signOutUrl: null }),
   );
   app.get('/api/health', async (_req, res) =>
     res.json({ ok: true, initialized: await catalog.initialized() }),
   );
+  app.get('/api/classification', async (_req, res) => res.json(await repository.classification()));
   app.get('/api/stats', async (_req, res) => res.json(await catalog.stats()));
   app.get('/api/filters', async (_req, res) => res.json(await catalog.filters()));
   app.get('/api/suggestions', async (req, res) =>

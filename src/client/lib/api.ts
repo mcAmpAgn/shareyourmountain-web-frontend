@@ -44,6 +44,17 @@ export const queryString = (query: CatalogQuery) => {
   return params.toString();
 };
 export const api = {
+  classification: (signal?: AbortSignal) =>
+    request<import('../../shared/contracts').Classification>('/classification', { signal }),
+  mountainGallery: (
+    id: number,
+    provider: import('../../shared/contracts').PhotoProvider,
+    signal?: AbortSignal,
+  ) =>
+    request<import('../../shared/contracts').MountainGallery>(
+      `/mountains/${id}/photos?provider=${provider}`,
+      { signal },
+    ),
   suggestions: (query: SuggestionQuery, signal?: AbortSignal) =>
     request<SuggestionPage>('/suggestions?' + queryString(query), { signal }),
   mapMountains: (bounds: MapBounds, minElevation: number, signal?: AbortSignal) =>

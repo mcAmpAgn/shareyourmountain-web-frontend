@@ -1,4 +1,19 @@
 export type ItemKind = 'mountain' | 'route';
+export type PhotoProvider = 'commons' | 'instagram';
+export interface MountainPhoto {
+  id: string;
+  url: string;
+  title: string;
+  sourceUrl: string;
+  author: string;
+  license: string;
+  licenseUrl: string | null;
+}
+export interface MountainGallery {
+  provider: PhotoProvider;
+  status: 'ready' | 'empty' | 'unavailable' | 'not_configured';
+  images: MountainPhoto[];
+}
 export interface SuggestionQuery {
   q: string;
   kind?: ItemKind;
@@ -51,7 +66,12 @@ export interface CatalogDetail extends CatalogItem {
   parking: { name: string; latitude: number | null; longitude: number | null } | null;
   track: { name: string; url: string | null } | null;
 }
+export interface Classification {
+  ranges: { id: number; name: string; parentId: number | null }[];
+  groups: { id: number; name: string; rangeId: number | null }[];
+}
 export interface CatalogQuery {
+  groupId?: number;
   q?: string;
   kind?: ItemKind;
   activityId?: number;

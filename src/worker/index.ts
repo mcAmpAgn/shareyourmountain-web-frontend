@@ -9,6 +9,7 @@ import { d1Queries } from './d1-adapter.js';
 import { createD1AdventureRepository } from './adventure-repository.js';
 import { accessConfigured, verifyAccessIdentity } from './access.js';
 import * as validation from '../core/validation.js';
+import { createMountainGallery } from '../core/mountain-gallery.js';
 
 function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), {
@@ -62,6 +63,7 @@ async function readJSON(request: Request) {
 type IdentityVerifier = typeof verifyAccessIdentity;
 export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIdentity) {
   const cached = createPublicCache();
+  const galleries = new WeakMap<WorkerEnv, ReturnType<typeof createMountainGallery>>();
   const handler = {
     async fetch(request: Request, env: WorkerEnv): Promise<Response> {
       const url = new URL(request.url),
@@ -89,10 +91,30 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
           throw new ApplicationError(400, 'Parametri duplicati non validi.');
         if (method === 'GET' && path === '/api/health')
           return json({ ok: true, initialized: await catalog.initialized() });
+        if (method === 'GET' && path === '/api/classification')
+          return json(await repository.classification());
         if (method === 'GET' && path === '/api/stats') return json(await catalog.stats());
         if (method === 'GET' && path === '/api/filters') return json(await catalog.filters());
         if (method === 'GET' && path === '/api/suggestions')
           return json(await catalog.suggestions(validation.suggestionQuery.parse(query)));
+        const photoPath = path.match(/^\/api\/mountains\/(\d+)\/photos$/);
+        if (method === 'GET' && photoPath) {
+          const id = validation.catalogId.parse(photoPath[1]);
+          const { provider } = validation.galleryQuery.parse(query);
+          const mountain = await repository.photoReference(id);
+          if (!mountain) throw new ApplicationError(404, 'Questa montagna non è disponibile.');
+          let gallery = galleries.get(env);
+          if (!gallery) {
+            gallery = createMountainGallery({
+              instagramToken: env.INSTAGRAM_ACCESS_TOKEN,
+              instagramUserId: env.INSTAGRAM_USER_ID,
+              instagramVersion: env.INSTAGRAM_API_VERSION,
+              instagramHashtags: env.INSTAGRAM_MOUNTAIN_HASHTAGS,
+            });
+            galleries.set(env, gallery);
+          }
+          return json(await gallery.load(mountain, provider));
+        }
         if (method === 'GET' && ['/api/catalog', '/api/mountains', '/api/routes'].includes(path)) {
           const input = validation.catalogQuery.parse(query);
           return json(

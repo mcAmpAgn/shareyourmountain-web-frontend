@@ -19,9 +19,26 @@ test('API validates queries, serves public DTOs, protects the local profile and 
   try {
     assert.equal((await fetch(base + '/api/health').then((r) => r.json())).initialized, true);
     assert.equal(
+      (await fetch(base + '/api/mountains/10/photos?provider=instagram').then((r) => r.json()))
+        .status,
+      'not_configured',
+    );
+    assert.equal((await fetch(base + '/api/mountains/999/photos')).status, 404);
+    assert.equal((await fetch(base + '/api/mountains/12/photos')).status, 404);
+    assert.equal((await fetch(base + '/api/mountains/10/photos?provider=invalid')).status, 400);
+    assert.equal(
+      (await fetch(base + '/api/mountains/10/photos?provider=instagram&token=no')).status,
+      400,
+    );
+    assert.equal(
       (await fetch(base + '/api/catalog?kind=route&activityId=7').then((r) => r.json())).total,
       1,
     );
+    const classification = await fetch(base + '/api/classification').then((r) => r.json());
+    assert.equal(classification.ranges[0].name, 'Alpi Pennine');
+    assert.deepEqual(classification.groups, []);
+    assert.equal((await fetch(base + '/api/catalog?groupId=-1')).status, 400);
+    assert.equal((await fetch(base + '/api/catalog?groupId=999').then((r) => r.json())).total, 0);
     assert.equal((await fetch(base + '/api/catalog?page=-1')).status, 400);
     assert.equal((await fetch(base + '/api/catalog?pageSize=999')).status, 400);
     assert.equal((await fetch(base + '/api/catalog?unknown=1')).status, 400);

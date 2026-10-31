@@ -5,3 +5,10 @@
 
 # Set only after choosing Google as the sole login method for this Access app.
 # ACCESS_LOGIN_PROVIDER=google
+
+# Optional public mountain-hashtag gallery. See docs/MOUNTAIN_PHOTOS.md.
+# Keep the token in ignored .dev.vars locally and a Worker secret online.
+# INSTAGRAM_ACCESS_TOKEN=replace-with-approved-server-token
+# INSTAGRAM_USER_ID=replace-with-numeric-professional-user-id
+# INSTAGRAM_API_VERSION=replace-with-supported-version
+# INSTAGRAM_MOUNTAIN_HASHTAGS={"10":"replace-with-numeric-hashtag-id"}
