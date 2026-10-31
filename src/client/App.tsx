@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { ClassificationPage } from './components/ClassificationPage';
 import type { CatalogItem } from '../shared/contracts';
 import { api } from './lib/api';
@@ -18,15 +18,22 @@ import { StorySections } from './components/StorySections';
 import { Modal } from './components/Modal';
 import { MapSection } from './components/MapSection';
 import { SignInModal } from './components/SignInModal';
+import { GamePromo } from './components/GamePromo';
 
+const ClimberGame = lazy(() => import('./game/ClimberGame'));
 export function App() {
+  const gamePage = location.pathname.replace(/\/$/, '') === '/game';
   const classificationPage = location.pathname.replace(/\/$/, '') === '/soiusa';
   const page = pageKind();
   const pageTarget = detailTarget(location.pathname);
-  const meta = useResource(async (signal) => {
-      const [stats, filters] = await Promise.all([api.stats(signal), api.filters(signal)]);
-      return { stats, filters };
-    }, []),
+  const meta = useResource(
+      async (signal) => {
+        if (gamePage) return null;
+        const [stats, filters] = await Promise.all([api.stats(signal), api.filters(signal)]);
+        return { stats, filters };
+      },
+      [gamePage],
+    ),
     adventures = useAdventures();
   const navigation = useCatalogNavigation();
   const { query, featured, detail, change, reset, search, closeDetail } = navigation;
@@ -48,10 +55,16 @@ export function App() {
       <Header
         count={adventures.items.length}
         onAdventures={() => setShowAdventures(true)}
-        page={classificationPage ? 'soiusa' : (pageTarget?.kind ?? page)}
+        page={gamePage ? 'game' : classificationPage ? 'soiusa' : (pageTarget?.kind ?? page)}
       />
       <main id="main">
-        {pageTarget ? (
+        {gamePage ? (
+          <Suspense fallback={<div className="wrapper">Caricamento del gioco…</div>}>
+            <ClimberGame
+              suspended={!!(showAdventures || info || detail || adventures.signInRequested)}
+            />
+          </Suspense>
+        ) : pageTarget ? (
           <DetailPage target={pageTarget} adventures={adventures} />
         ) : classificationPage ? (
           <ClassificationPage />
@@ -109,6 +122,7 @@ export function App() {
               onFeatured={navigation.inspire}
             />
             <MapSection onOpen={open} />
+            <GamePromo />
             <StorySections onSearch={search} />
           </>
         )}

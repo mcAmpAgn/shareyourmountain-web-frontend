@@ -1,0 +1,284 @@
+.climb-page {
+  background: #f2f1e9;
+  min-height: 70dvh;
+  color: #203e35;
+}
+
+.climb-layout {
+  max-width: 1120px;
+  margin: auto;
+  padding: 50px 25px;
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  align-items: start;
+  gap: 70px;
+}
+.climb-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: #65785b;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.climb-intro h1 {
+  font-size: clamp(60px, 7vw, 98px);
+  line-height: 0.97;
+  letter-spacing: -5px;
+  font-weight: 500;
+  margin-bottom: 25px;
+}
+.climb-intro h1 span {
+  color: #d38b4d;
+}
+.climb-intro > p:not(.climb-eyebrow) {
+  max-width: 360px;
+  font-size: 14px;
+  color: #65726a;
+  line-height: 1.85;
+}
+.climb-instructions {
+  border-top: 1px solid #d7dbce;
+  margin-top: 30px;
+  padding-top: 24px;
+}
+.climb-instructions h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+.climb-instructions p {
+  font-size: 12px;
+  color: #65726a;
+  line-height: 1.9;
+  margin-bottom: 17px;
+}
+.climb-instructions strong {
+  color: #203e35;
+  font-weight: 600;
+}
+.climb-touch-note {
+  font-size: 11px !important;
+}
+.climb-explore {
+  display: inline-block;
+  font-size: 12px;
+  margin-top: 25px;
+  border-bottom: 1px solid #acb9a2;
+  padding-bottom: 8px;
+}
+.climb-game {
+  background: #203e35;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px #203e3520;
+  width: 100%;
+}
+.climb-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 18px 20px;
+  color: #f3f1df;
+}
+.climb-hud > div {
+  display: grid;
+  gap: 5px;
+}
+.climb-hud > div > span {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #bfceb6;
+}
+.climb-hud strong {
+  font-size: 19px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.climb-lost-hearts {
+  color: #9cae94;
+}
+.climb-pause {
+  background: #ffffff15;
+  border: 1px solid #ffffff35;
+  color: white;
+  border-radius: 5px;
+  width: 36px;
+  height: 36px;
+}
+.climb-progress {
+  background: #162e29;
+  height: 4px;
+}
+.climb-progress > span {
+  display: block;
+  height: 100%;
+  background: #e8b462;
+  transition: width 0.1s linear;
+}
+.climb-stage {
+  position: relative;
+}
+.climb-stage canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3/4;
+  touch-action: none;
+}
+.climb-stage canvas:focus-visible {
+  outline: 3px solid #efbd69;
+  outline-offset: -3px;
+}
+.climb-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 35px;
+  text-align: center;
+  background: #112e2ac9;
+  color: #f6f3e3;
+  backdrop-filter: blur(3px);
+}
+.climb-overlay-icon {
+  font-size: 60px;
+  line-height: 1;
+  color: #eac27b;
+  margin-bottom: 25px;
+}
+.climb-overlay h2 {
+  font-size: 31px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  margin-bottom: 14px;
+}
+.climb-overlay p {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #d1dbc6;
+  max-width: 290px;
+}
+.climb-start {
+  background: #eac27b;
+  color: #183b32;
+  padding: 16px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 5px;
+  margin-top: 26px;
+}
+.climb-start:hover {
+  background: #f5dca6;
+}
+.climb-bottom {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+}
+.climb-bottom > span {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #c6d4b8;
+  max-width: 120px;
+}
+.climb-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 40px);
+  gap: 4px;
+}
+.climb-direction {
+  background: #ffffff12;
+  border: 1px solid #ffffff30;
+  border-radius: 5px;
+  color: #f3f2df;
+  font-size: 22px;
+  touch-action: none;
+  user-select: none;
+}
+.climb-direction:active {
+  background: #eac27b;
+  color: #183b32;
+}
+.climb-up {
+  grid-column: 2;
+}
+.climb-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+.climb-down {
+  grid-column: 2;
+  grid-row: 2;
+}
+.climb-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+@media (max-width: 900px) {
+  .climb-layout {
+    grid-template-columns: 1fr minmax(280px, 440px);
+    gap: 30px;
+    padding-top: 30px;
+  }
+  .climb-intro h1 {
+    font-size: 62px;
+  }
+}
+@media (max-width: 650px) {
+  .climb-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 28px 16px;
+    max-width: 480px;
+  }
+  .climb-intro h1 {
+    font-size: 44px;
+    letter-spacing: -2px;
+    margin-bottom: 12px;
+  }
+  .climb-intro h1 br {
+    display: none;
+  }
+  .climb-eyebrow {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+  .climb-intro > p:not(.climb-eyebrow) {
+    font-size: 12px;
+    margin-bottom: 0;
+  }
+  .climb-instructions,
+  .climb-touch-note,
+  .climb-explore {
+    display: none;
+  }
+  .climb-overlay {
+    padding: 25px;
+  }
+  .climb-overlay h2 {
+    font-size: 27px;
+  }
+  .climb-overlay-icon {
+    font-size: 42px;
+    margin-bottom: 18px;
+  }
+  .climb-game {
+    max-width: 440px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .climb-progress > span {
+    transition: none;
+  }
+  .climb-overlay {
+    backdrop-filter: none;
+  }
+}
