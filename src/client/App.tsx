@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { ClassificationPage } from './components/ClassificationPage';
 import type { CatalogItem } from '../shared/contracts';
 import { api } from './lib/api';
@@ -19,7 +19,18 @@ import { Modal } from './components/Modal';
 import { MapSection } from './components/MapSection';
 import { SignInModal } from './components/SignInModal';
 
+const ClimberGame = lazy(() => import('./game/ClimberGame'));
 export function App() {
+  return location.pathname.replace(/\/$/, '') === '/game' ? (
+    <Suspense fallback={<main className="wrapper">Caricamento del gioco…</main>}>
+      <ClimberGame />
+    </Suspense>
+  ) : (
+    <CatalogApp />
+  );
+}
+
+function CatalogApp() {
   const classificationPage = location.pathname.replace(/\/$/, '') === '/soiusa';
   const page = pageKind();
   const pageTarget = detailTarget(location.pathname);

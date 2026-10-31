@@ -54,6 +54,7 @@ export function Header({
           Gruppi e catene
         </a>
         <a href="/#map">Mappa</a>
+        <a href="/game">Gioca ↗</a>
         <a href="/#community">Il progetto</a>
       </nav>
       <button className="saved-button" onClick={onAdventures}>
@@ -78,6 +79,7 @@ export function Footer({ onInfo }: { onInfo: (kind: 'data' | 'privacy') => void 
           <a href="/mountains">Montagne</a>
           <a href="/routes">Itinerari</a>
           <a href="/soiusa">Gruppi e catene · SOIUSA</a>
+          <a href="/game">Verso la vetta · Gioca</a>
           <button onClick={() => onInfo('data')}>Dati e fonti</button>
         </div>
       </div>

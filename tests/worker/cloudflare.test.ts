@@ -131,7 +131,7 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       (await mf.dispatchFetch('https://example.test/api/catalog?groupId=-1')).status,
       400,
     );
-    for (const path of ['/mountains/10', '/routes/2']) {
+    for (const path of ['/mountains/10', '/routes/2', '/game']) {
       const page = await mf.dispatchFetch('https://example.test' + path, {
         headers: { Accept: 'text/html' },
       });
