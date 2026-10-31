@@ -61,6 +61,7 @@ export function createApp(db: AppDatabase, galleryConfig: InstagramGalleryConfig
   app.get('/api/health', async (_req, res) =>
     res.json({ ok: true, initialized: await catalog.initialized() }),
   );
+  app.get('/api/classification', async (_req, res) => res.json(await repository.classification()));
   app.get('/api/stats', async (_req, res) => res.json(await catalog.stats()));
   app.get('/api/filters', async (_req, res) => res.json(await catalog.filters()));
   app.get('/api/suggestions', async (req, res) =>

@@ -1,0 +1,142 @@
+.classification-badge {
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  padding: 12px 20px;
+  color: var(--forest);
+  font-size: 11px;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+.classification-guide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 35px;
+  padding: 28px;
+  margin: 28px 0;
+  background: #eaf0e2;
+  border-radius: 7px;
+}
+.classification-guide .eyebrow {
+  font-size: 10px;
+}
+.classification-flow {
+  font-size: clamp(16px, 1.8vw, 22px);
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.classification-flow span {
+  color: #83966f;
+  padding: 0 5px;
+}
+.classification-guide > p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #566853;
+  margin: 0;
+}
+.classification-guide a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.classification-controls {
+  display: flex;
+  gap: 18px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.classification-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+.classification-search {
+  flex: 1;
+  min-width: 240px;
+}
+.classification-controls input,
+.classification-controls select {
+  background: white;
+  color: var(--ink);
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font: inherit;
+  font-size: 14px;
+  min-height: 48px;
+}
+.classification-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 16px;
+}
+.classification-selection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid var(--line);
+  margin-top: 20px;
+  font-size: 13px;
+}
+.classification-page .table-status {
+  margin-top: 26px;
+}
+.classification-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.classification-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 340px;
+}
+.classification-path .table-link {
+  text-align: left;
+}
+.classification-actions {
+  display: flex;
+  gap: 18px;
+  white-space: nowrap;
+}
+.classification-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 25px 0;
+  font-size: 12px;
+}
+.classification-table {
+  min-width: 850px;
+}
+@media (max-width: 700px) {
+  .classification-guide {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+  .classification-badge {
+    display: none;
+  }
+  .classification-controls {
+    gap: 12px;
+  }
+  .classification-search {
+    flex-basis: 100%;
+  }
+  .classification-controls label:not(.classification-search) {
+    flex: 1;
+    min-width: 135px;
+  }
+  .classification-controls select {
+    max-width: 100%;
+    width: 100%;
+  }
+  .classification-pagination button {
+    padding: 9px;
+  }
+}

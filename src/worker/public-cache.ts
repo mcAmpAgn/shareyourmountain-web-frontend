@@ -4,7 +4,7 @@ type Entry = { response: Response; expires: number; bytes: number };
 export function catalogTTL(request: Request): number {
   if (request.method !== 'GET') return 0;
   const path = new URL(request.url).pathname;
-  if (['/api/stats', '/api/filters'].includes(path)) return 3600;
+  if (['/api/stats', '/api/filters', '/api/classification'].includes(path)) return 3600;
   if (path === '/api/suggestions') return 60;
   if (path === '/api/map/mountains') return 120;
   if (
@@ -43,7 +43,7 @@ export function createPublicCache(
     if (!pools.has(database)) pools.set(database, pool);
     const cacheURL = new URL(request.url);
     cacheURL.searchParams.sort();
-    cacheURL.pathname = '/__sym_catalog_cache/v2' + cacheURL.pathname;
+    cacheURL.pathname = '/__sym_catalog_cache/v3' + cacheURL.pathname;
     const key = cacheURL.href;
     const entry = pool.entries.get(key);
     if (entry && entry.expires > now()) {

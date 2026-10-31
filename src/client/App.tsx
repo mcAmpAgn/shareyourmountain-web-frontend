@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ClassificationPage } from './components/ClassificationPage';
 import type { CatalogItem } from '../shared/contracts';
 import { api } from './lib/api';
 import { useCatalogNavigation, pageKind } from './hooks/use-catalog-navigation';
@@ -10,6 +11,8 @@ import { Header, Footer } from './components/SiteChrome';
 import { Hero } from './components/Hero';
 import { CatalogSection } from './components/CatalogSection';
 import { DetailModal } from './components/DetailModal';
+import { DetailPage } from './components/DetailPage';
+import { detailTarget, detailPath } from './lib/detail-navigation';
 import { AdventuresModal } from './components/AdventuresModal';
 import { StorySections } from './components/StorySections';
 import { Modal } from './components/Modal';
@@ -17,7 +20,9 @@ import { MapSection } from './components/MapSection';
 import { SignInModal } from './components/SignInModal';
 
 export function App() {
+  const classificationPage = location.pathname.replace(/\/$/, '') === '/soiusa';
   const page = pageKind();
+  const pageTarget = detailTarget(location.pathname);
   const meta = useResource(async (signal) => {
       const [stats, filters] = await Promise.all([api.stats(signal), api.filters(signal)]);
       return { stats, filters };
@@ -29,6 +34,10 @@ export function App() {
   const [info, setInfo] = useState<'data' | 'privacy' | null>(null);
   function open(item: Pick<CatalogItem, 'kind' | 'id'>) {
     setShowAdventures(false);
+    if (pageTarget) {
+      location.href = detailPath(item.kind, item.id);
+      return;
+    }
     navigation.open(item);
   }
   return (
@@ -39,10 +48,14 @@ export function App() {
       <Header
         count={adventures.items.length}
         onAdventures={() => setShowAdventures(true)}
-        page={page}
+        page={classificationPage ? 'soiusa' : (pageTarget?.kind ?? page)}
       />
       <main id="main">
-        {page ? (
+        {pageTarget ? (
+          <DetailPage target={pageTarget} adventures={adventures} />
+        ) : classificationPage ? (
+          <ClassificationPage />
+        ) : page ? (
           <CatalogTablePage
             kind={page}
             query={query}
@@ -101,7 +114,7 @@ export function App() {
         )}
       </main>
       <Footer onInfo={setInfo} />
-      {detail && (
+      {detail && !pageTarget && (
         <DetailModal
           key={detail.kind + detail.id}
           target={detail}

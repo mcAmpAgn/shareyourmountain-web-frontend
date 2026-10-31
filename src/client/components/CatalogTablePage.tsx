@@ -1,3 +1,4 @@
+import { RecordLabel } from './RecordLabel';
 import { useEffect, useState } from 'react';
 import type { CatalogItem, CatalogQuery, Filters, ItemKind } from '../../shared/contracts';
 import type { AdventuresState } from '../hooks/use-adventures';
@@ -44,6 +45,7 @@ export function CatalogTablePage({
   );
   const filtersCount = [
     query.rangeId,
+    query.groupId,
     query.countryId,
     query.regionId,
     query.minElevation,
@@ -90,6 +92,7 @@ export function CatalogTablePage({
         <a href="/routes" aria-current={!mountain ? 'page' : undefined}>
           ⌁ &nbsp; Itinerari
         </a>
+        <a href="/soiusa">Gruppi e catene</a>
         <span>ARCHIVIO STORICO · 2017</span>
       </nav>
       <div className="catalog-table-toolbar">
@@ -166,6 +169,15 @@ export function CatalogTablePage({
             </label>
           )}
         </div>
+      )}
+      {query.groupId && (
+        <p className="table-context">
+          Gruppo montuoso: {result.data?.items[0]?.mountainGroup || `#${query.groupId}`}{' '}
+          <button className="table-link" onClick={() => onChange({ groupId: undefined })}>
+            Mostra tutti ×
+          </button>{' '}
+          · <a href="/soiusa">Gruppi e catene ↗</a>
+        </p>
       )}
       {query.mountainId && (
         <p className="table-context">
@@ -252,20 +264,36 @@ export function CatalogTablePage({
                         <span aria-hidden="true">↗</span>
                       </button>
                       <small className="table-record">
-                        {mountain ? 'CIMA' : 'ITINERARIO'} #{item.id}
+                        <RecordLabel tone={mountain ? 'mountain' : 'route'}>
+                          {mountain ? 'CIMA' : 'ITINERARIO'}
+                        </RecordLabel>{' '}
+                        #{item.id}
                       </small>
                     </th>
                     {!mountain && (
                       <td>
-                        <span className="table-activity">{item.activity || '—'}</span>
+                        <span
+                          className="table-activity activity-label"
+                          data-activity={item.activityId ?? undefined}
+                        >
+                          {item.activity || '—'}
+                        </span>
                         <small>{item.difficultyRaw || 'Difficoltà non indicata'}</small>
                       </td>
                     )}
                     <td className="table-elevation">{metres(item.elevationM)}</td>
                     {mountain ? (
                       <>
-                        <td>{item.range || '—'}</td>
-                        <td>{item.mountainGroup || '—'}</td>
+                        <td>
+                          {item.range ? <RecordLabel tone="range">{item.range}</RecordLabel> : '—'}
+                        </td>
+                        <td>
+                          {item.mountainGroup ? (
+                            <RecordLabel tone="group">{item.mountainGroup}</RecordLabel>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
                         <td>{item.countries.join(' · ') || '—'}</td>
                         <td>
                           <button
@@ -298,8 +326,14 @@ export function CatalogTablePage({
                           )}
                         </td>
                         <td>
-                          {item.range || '—'}
-                          <small>{item.mountainGroup || '—'}</small>
+                          {item.range ? <RecordLabel tone="range">{item.range}</RecordLabel> : '—'}
+                          <small>
+                            {item.mountainGroup ? (
+                              <RecordLabel tone="group">{item.mountainGroup}</RecordLabel>
+                            ) : (
+                              '—'
+                            )}
+                          </small>
                         </td>
                         <td>
                           {item.region || '—'}

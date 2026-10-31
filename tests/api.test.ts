@@ -34,6 +34,11 @@ test('API validates queries, serves public DTOs, protects the local profile and 
       (await fetch(base + '/api/catalog?kind=route&activityId=7').then((r) => r.json())).total,
       1,
     );
+    const classification = await fetch(base + '/api/classification').then((r) => r.json());
+    assert.equal(classification.ranges[0].name, 'Alpi Pennine');
+    assert.deepEqual(classification.groups, []);
+    assert.equal((await fetch(base + '/api/catalog?groupId=-1')).status, 400);
+    assert.equal((await fetch(base + '/api/catalog?groupId=999').then((r) => r.json())).total, 0);
     assert.equal((await fetch(base + '/api/catalog?page=-1')).status, 400);
     assert.equal((await fetch(base + '/api/catalog?pageSize=999')).status, 400);
     assert.equal((await fetch(base + '/api/catalog?unknown=1')).status, 400);

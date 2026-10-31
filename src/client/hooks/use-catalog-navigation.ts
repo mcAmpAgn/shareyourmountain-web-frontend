@@ -17,6 +17,7 @@ function readQuery(): CatalogQuery {
   for (const key of [
     'activityId',
     'rangeId',
+    'groupId',
     'countryId',
     'regionId',
     'mountainId',
@@ -42,6 +43,7 @@ export function useCatalogNavigation() {
     [featured, setFeatured] = useState(() => !pageKind() && !location.search),
     [detail, setDetail] = useState(readDetail);
   useEffect(() => {
+    if (location.pathname.replace(/\/$/, '') === '/soiusa') return;
     const search = new URLSearchParams(queryString(query));
     // Keep the login return marker until the authenticated favourites hook consumes it.
     if (new URLSearchParams(location.search).get('resumeFavorite') === '1')

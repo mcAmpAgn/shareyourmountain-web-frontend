@@ -65,10 +65,10 @@ export function createCatalogRepository(database: SqlDatabase) {
   // Filtering, sorting and counts do not need card joins, country aggregation or route counts.
   const candidates = `SELECT 'm-'||m.id AS key,m.id,'mountain' AS kind,m.mntn_name AS name,
     m.mntn_altitude AS elevation_m,coalesce(m.mntnRange_id,0) AS range_id,NULL AS region_id,
-    NULL AS country_id,NULL AS activity_id,NULL AS mountain_id,m.mntn_status AS active FROM mountain m
+    NULL AS country_id,NULL AS activity_id,NULL AS mountain_id,m.mntn_status AS active,m.mntnGroup_id AS group_id FROM mountain m
     UNION ALL SELECT 'r-'||r.id,r.id,'route',coalesce(nullif(trim(r.route_title),''),r.route_name),
     r.route_altitude,coalesce(r.mntnRange_id,m.mntnRange_id,0),r.region_id,r.country_id,
-    r.activity_id,r.mountain_id,r.route_status FROM route r LEFT JOIN mountain m ON m.id=r.mountain_id`;
+    r.activity_id,r.mountain_id,r.route_status,coalesce(r.mntnGroup_id,m.mntnGroup_id) FROM route r LEFT JOIN mountain m ON m.id=r.mountain_id`;
   async function selection(query: CatalogQuery, namesOnly = false) {
     const where = ['i.active=1'],
       params: (string | number)[] = [];
@@ -84,13 +84,20 @@ export function createCatalogRepository(database: SqlDatabase) {
     for (const [key, column] of [
       ['kind', 'kind'],
       ['activityId', 'activity_id'],
-      ['rangeId', 'range_id'],
+      ['groupId', 'group_id'],
       ['mountainId', 'mountain_id'],
     ] as const) {
       if (query[key] !== undefined) {
         where.push(`i.${column}=?`);
         params.push(query[key]!);
       }
+    }
+    if (query.rangeId !== undefined) {
+      where.push(`i.range_id IN (WITH RECURSIVE descendants(id) AS (
+        SELECT id FROM mntn_mountainrange WHERE id=? UNION
+        SELECT r.id FROM mntn_mountainrange r JOIN descendants d ON r.mntnRange_parentId=d.id
+      ) SELECT id FROM descendants)`);
+      params.push(query.rangeId);
     }
     if (query.minElevation !== undefined) {
       where.push('i.elevation_m>=?');
@@ -158,6 +165,7 @@ export function createCatalogRepository(database: SqlDatabase) {
       [
         query.activityId,
         query.rangeId,
+        query.groupId,
         query.mountainId,
         query.minElevation,
         query.countryId,
@@ -254,6 +262,21 @@ export function createCatalogRepository(database: SqlDatabase) {
     get,
     stats,
     filters,
+    classification: async (): Promise<import('../shared/contracts.js').Classification> => {
+      const [ranges, groups] = await Promise.all([
+        database
+          .prepare(
+            `SELECT id,mntnRange_name AS name,mntnRange_parentId AS parentId FROM mntn_mountainrange WHERE trim(coalesce(mntnRange_name,''))<>'' ORDER BY mntnRange_name COLLATE NOCASE`,
+          )
+          .all(),
+        database
+          .prepare(
+            `SELECT id,mntnGroup_name AS name,mntnRange_id AS rangeId FROM mntn_mountaingroup WHERE trim(coalesce(mntnGroup_name,''))<>'' ORDER BY mntnGroup_name COLLATE NOCASE`,
+          )
+          .all(),
+      ]);
+      return { ranges, groups } as import('../shared/contracts.js').Classification;
+    },
     photoReference: async (id: number) =>
       (await database
         .prepare(
