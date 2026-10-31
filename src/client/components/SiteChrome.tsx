@@ -6,7 +6,7 @@ export function Header({
 }: {
   count: number;
   onAdventures: () => void;
-  page?: 'mountain' | 'route' | 'soiusa';
+  page?: 'mountain' | 'route' | 'soiusa' | 'game';
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -54,7 +54,13 @@ export function Header({
           Gruppi e catene
         </a>
         <a href="/#map">Mappa</a>
-        <a href="/game">Gioca ↗</a>
+        <a
+          href="/game"
+          className={page === 'game' ? 'nav-active' : ''}
+          aria-current={page === 'game' ? 'page' : undefined}
+        >
+          Gioca ↗
+        </a>
         <a href="/#community">Il progetto</a>
       </nav>
       <button className="saved-button" onClick={onAdventures}>

@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { freshGame, progress, step, WIDTH, HEIGHT, type Controls, type Phase } from './engine';
+import {
+  freshGame,
+  progress,
+  step,
+  WIDTH,
+  HEIGHT,
+  shelter,
+  type Controls,
+  type Phase,
+} from './engine';
 import { draw } from './render';
 import './climber-game.css';
 const emptyControls = (): Controls => ({ left: false, right: false, up: false, down: false });
@@ -13,17 +22,28 @@ const keys: Record<string, keyof Controls> = {
   ArrowDown: 'down',
   s: 'down',
 };
-export default function ClimberGame() {
+export default function ClimberGame({ suspended = false }: { suspended?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null),
     state = useRef(freshGame()),
     controls = useRef(emptyControls());
-  const [hud, setHud] = useState({ phase: 'ready' as Phase, lives: 3, progress: 0, elapsed: 0 });
+  const [hud, setHud] = useState({
+    phase: 'ready' as Phase,
+    lives: 3,
+    progress: 0,
+    elapsed: 0,
+    covered: false,
+    rest: 0,
+    recovered: false,
+  });
   const announce = () =>
     setHud({
       phase: state.current.phase,
       lives: state.current.lives,
       progress: Math.floor(progress(state.current)),
       elapsed: Math.floor(state.current.elapsed),
+      covered: !!shelter(state.current),
+      rest: Math.floor((state.current.rest * 100) / 3),
+      recovered: state.current.recoveredLedges.includes(shelter(state.current)?.id ?? -1),
     });
   function start() {
     state.current = { ...freshGame(), phase: 'playing' };
@@ -39,16 +59,24 @@ export default function ClimberGame() {
     }
   }
   useEffect(() => {
+    if (suspended && state.current.phase === 'playing') {
+      state.current.phase = 'paused';
+      controls.current = emptyControls();
+      announce();
+    }
+  }, [suspended]);
+  useEffect(() => {
     document.title = 'Verso la vetta · Gioca — Share Your Mountain';
     const c = canvas.current!,
       context = c.getContext('2d');
     if (!context) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const resize = () => {
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       c.width = WIDTH * ratio;
       c.height = HEIGHT * ratio;
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      draw(context, state.current);
+      draw(context, state.current, reducedMotion);
     };
     resize();
     window.addEventListener('resize', resize);
@@ -62,7 +90,7 @@ export default function ClimberGame() {
       const before = state.current.phase;
       step(state.current, controls.current, dt);
       if (state.current.phase === 'playing' || drawnPhase !== state.current.phase)
-        draw(context, state.current);
+        draw(context, state.current, reducedMotion);
       drawnPhase = state.current.phase;
       if (
         (state.current.phase === 'playing' && now - lastHud > 100) ||
@@ -131,27 +159,18 @@ export default function ClimberGame() {
   const messages = {
     ready: [
       'La vetta ti aspetta.',
-      'Sali lungo la parete e schiva le rocce. Tre vite, una cima da conquistare.',
+      'Schiva rocce e ghiaccio. Riposati sotto i tetti e conquista la cima.',
     ],
     paused: ['Una pausa in parete.', 'Riprendi quando sei pronto.'],
     won: ['La vetta è tua!', 'Hai conquistato la cima. Respira: il panorama te lo sei meritato.'],
     lost: [
       'Si riparte dal campo base.',
-      'Le rocce hanno avuto la meglio. Riprova e scegli una nuova linea.',
+      'Rocce e ghiaccio hanno avuto la meglio. Riprova e scegli una nuova linea.',
     ],
   };
   return (
     <div className="climb-page">
-      <header className="climb-header">
-        <a href="/" aria-label="Share Your Mountain, home">
-          <img src="/assets/logo-white.png" width="507" height="53" alt="Share Your Mountain" />
-        </a>
-        <nav aria-label="Navigazione del gioco">
-          <a href="/mountains">Esplora le montagne ↗</a>
-          <a href="/">← Torna al portale</a>
-        </nav>
-      </header>
-      <main className="climb-layout">
+      <div className="climb-layout">
         <section className="climb-intro">
           <p className="climb-eyebrow">UN PICCOLO GIOCO. UNA GRANDE SALITA.</p>
           <h1 aria-label="Verso la vetta">
@@ -159,7 +178,10 @@ export default function ClimberGame() {
             <br />
             la vetta<span>.</span>
           </h1>
-          <p>La montagna chiama. Trova la tua linea, tieni gli occhi aperti e conquista la cima.</p>
+          <p>
+            Trova la tua linea, schiva rocce e ghiaccio e riprendi fiato sotto le sporgenze. La cima
+            ti aspetta.
+          </p>
           <div className="climb-instructions">
             <h2>Come si gioca</h2>
             <p>
@@ -170,12 +192,14 @@ export default function ClimberGame() {
             <p>
               <strong>Occhio al segnale !</strong>
               <br />
-              Una roccia sta per cadere: spostati di lato.
+              Rocce (!) e ghiaccio (❄) stanno per cadere. Il ghiaccio è più veloce: spostati di
+              lato.
             </p>
             <p>
-              <strong>Tre vite. Un obiettivo.</strong>
+              <strong>Piccoli tetti, vere soste.</strong>
               <br />
-              Raggiungi la bandiera. P o Esc per la pausa.
+              Fermati 3 secondi sotto un tetto per recuperare una vita, una volta per sosta. Aggira
+              le sporgenze per salire. P o Esc per la pausa.
             </p>
           </div>
           <p className="climb-touch-note">
@@ -254,7 +278,7 @@ export default function ClimberGame() {
               }}
             >
               Il gioco richiede un browser con supporto Canvas. Usa frecce o WASD per raggiungere la
-              cima evitando le rocce.
+              cima evitando rocce e ghiaccio; fermati sotto i tetti per riposare.
             </canvas>
             {hud.phase !== 'playing' && (
               <div className="climb-overlay">
@@ -292,7 +316,13 @@ export default function ClimberGame() {
                     ? 'Gioco in pausa.'
                     : hud.phase === 'ready'
                       ? 'Pronto per partire.'
-                      : `${hud.lives} vite rimaste. Schiva le rocce.`}
+                      : hud.covered
+                        ? hud.recovered
+                          ? 'Al riparo. Sosta già utilizzata: aggira il tetto per ripartire.'
+                          : hud.lives === 3
+                            ? 'Al riparo. Vite al massimo. Aggira il tetto per ripartire.'
+                            : `Al riparo: fermati per recuperare una vita (${Math.ceil((100 - hud.rest) * 0.03)} s).`
+                        : `${hud.lives} vite rimaste. Schiva rocce e ghiaccio.`}
             </span>
             <div className="climb-pad" aria-label="Controlli touch">
               {direction('up', 'Sali', '↑')}
@@ -302,10 +332,7 @@ export default function ClimberGame() {
             </div>
           </div>
         </section>
-      </main>
-      <footer className="climb-footer">
-        Share Your Mountain · Un gioco per chi ha sempre voglia di salire.
-      </footer>
+      </div>
     </div>
   );
 }

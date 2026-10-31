@@ -1,26 +1,9 @@
 .climb-page {
   background: #f2f1e9;
-  min-height: 100dvh;
+  min-height: 70dvh;
   color: #203e35;
 }
-.climb-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 25px;
-  padding: 25px max(24px, calc((100vw - 1200px) / 2));
-  background: #203e35;
-  color: #f3f2e6;
-}
-.climb-header img {
-  width: 240px;
-  height: auto;
-}
-.climb-header nav {
-  display: flex;
-  gap: 25px;
-  font-size: 12px;
-}
+
 .climb-layout {
   max-width: 1120px;
   margin: auto;
@@ -236,13 +219,7 @@
   grid-column: 3;
   grid-row: 2;
 }
-.climb-footer {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 25px 30px;
-  font-size: 10px;
-  color: #6d7b6a;
-}
+
 @media (max-width: 900px) {
   .climb-layout {
     grid-template-columns: 1fr minmax(280px, 440px);
@@ -252,23 +229,8 @@
   .climb-intro h1 {
     font-size: 62px;
   }
-  .climb-header img {
-    width: 210px;
-  }
 }
 @media (max-width: 650px) {
-  .climb-header {
-    padding: 20px;
-  }
-  .climb-header img {
-    width: 175px;
-  }
-  .climb-header nav a:first-child {
-    display: none;
-  }
-  .climb-header nav {
-    font-size: 10px;
-  }
   .climb-layout {
     display: flex;
     flex-direction: column;
