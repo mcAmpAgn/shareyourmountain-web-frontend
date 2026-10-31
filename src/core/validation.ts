@@ -20,6 +20,7 @@ export const catalogQuery = z
     kind: z.enum(['mountain', 'route']).optional(),
     activityId: id.optional(),
     rangeId: id.optional(),
+    groupId: id.optional(),
     countryId: id.optional(),
     regionId: id.optional(),
     mountainId: id.optional(),

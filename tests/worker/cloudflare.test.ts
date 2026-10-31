@@ -118,6 +118,19 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       (await mf.dispatchFetch('https://example.test/api/catalog?page=1&page=2')).status,
       400,
     );
+    const classification = await mf.dispatchFetch('https://example.test/api/classification');
+    assert.equal(classification.status, 200);
+    assert.match(classification.headers.get('Cache-Control') ?? '', /s-maxage=3600/);
+    const taxonomy = (await classification.json()) as {
+      ranges: { name: string }[];
+      groups: unknown[];
+    };
+    assert.equal(taxonomy.ranges[0].name, 'Alpi Pennine');
+    assert.deepEqual(taxonomy.groups, []);
+    assert.equal(
+      (await mf.dispatchFetch('https://example.test/api/catalog?groupId=-1')).status,
+      400,
+    );
     const missing = await mf.dispatchFetch('https://example.test/api/not-found');
     assert.equal(missing.status, 404);
     assert.match(missing.headers.get('Content-Type') ?? '', /json/);

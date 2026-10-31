@@ -44,6 +44,7 @@ export function CatalogTablePage({
   );
   const filtersCount = [
     query.rangeId,
+    query.groupId,
     query.countryId,
     query.regionId,
     query.minElevation,
@@ -90,6 +91,7 @@ export function CatalogTablePage({
         <a href="/routes" aria-current={!mountain ? 'page' : undefined}>
           ⌁ &nbsp; Itinerari
         </a>
+        <a href="/soiusa">Gruppi e catene</a>
         <span>ARCHIVIO STORICO · 2017</span>
       </nav>
       <div className="catalog-table-toolbar">
@@ -166,6 +168,15 @@ export function CatalogTablePage({
             </label>
           )}
         </div>
+      )}
+      {query.groupId && (
+        <p className="table-context">
+          Gruppo montuoso: {result.data?.items[0]?.mountainGroup || `#${query.groupId}`}{' '}
+          <button className="table-link" onClick={() => onChange({ groupId: undefined })}>
+            Mostra tutti ×
+          </button>{' '}
+          · <a href="/soiusa">Gruppi e catene ↗</a>
+        </p>
       )}
       {query.mountainId && (
         <p className="table-context">

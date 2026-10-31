@@ -66,7 +66,12 @@ export interface CatalogDetail extends CatalogItem {
   parking: { name: string; latitude: number | null; longitude: number | null } | null;
   track: { name: string; url: string | null } | null;
 }
+export interface Classification {
+  ranges: { id: number; name: string; parentId: number | null }[];
+  groups: { id: number; name: string; rangeId: number | null }[];
+}
 export interface CatalogQuery {
+  groupId?: number;
   q?: string;
   kind?: ItemKind;
   activityId?: number;

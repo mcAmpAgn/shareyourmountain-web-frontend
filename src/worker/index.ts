@@ -91,6 +91,8 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
           throw new ApplicationError(400, 'Parametri duplicati non validi.');
         if (method === 'GET' && path === '/api/health')
           return json({ ok: true, initialized: await catalog.initialized() });
+        if (method === 'GET' && path === '/api/classification')
+          return json(await repository.classification());
         if (method === 'GET' && path === '/api/stats') return json(await catalog.stats());
         if (method === 'GET' && path === '/api/filters') return json(await catalog.filters());
         if (method === 'GET' && path === '/api/suggestions')

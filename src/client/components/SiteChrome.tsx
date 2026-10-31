@@ -6,7 +6,7 @@ export function Header({
 }: {
   count: number;
   onAdventures: () => void;
-  page?: 'mountain' | 'route';
+  page?: 'mountain' | 'route' | 'soiusa';
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -46,6 +46,13 @@ export function Header({
         >
           Itinerari
         </a>
+        <a
+          href="/soiusa"
+          className={page === 'soiusa' ? 'nav-active' : ''}
+          aria-current={page === 'soiusa' ? 'page' : undefined}
+        >
+          Gruppi e catene
+        </a>
         <a href="/#map">Mappa</a>
         <a href="/#community">Il progetto</a>
       </nav>
@@ -70,6 +77,7 @@ export function Footer({ onInfo }: { onInfo: (kind: 'data' | 'privacy') => void 
         <div>
           <a href="/mountains">Montagne</a>
           <a href="/routes">Itinerari</a>
+          <a href="/soiusa">Gruppi e catene · SOIUSA</a>
           <button onClick={() => onInfo('data')}>Dati e fonti</button>
         </div>
       </div>
