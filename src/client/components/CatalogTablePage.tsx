@@ -263,12 +263,7 @@ export function CatalogTablePage({
                         {item.name}
                         <span aria-hidden="true">↗</span>
                       </button>
-                      <small className="table-record">
-                        <RecordLabel tone={mountain ? 'mountain' : 'route'}>
-                          {mountain ? 'CIMA' : 'ITINERARIO'}
-                        </RecordLabel>{' '}
-                        #{item.id}
-                      </small>
+                      <small className="table-record">#{item.id}</small>
                     </th>
                     {!mountain && (
                       <td>
