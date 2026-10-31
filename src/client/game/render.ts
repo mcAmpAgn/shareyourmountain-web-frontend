@@ -1,4 +1,4 @@
-import { WIDTH, HEIGHT, SUMMIT, START, cameraY, type GameState } from './engine';
+import { WIDTH, HEIGHT, SUMMIT, START, cameraY, LEDGES, shelter, type GameState } from './engine';
 function polygon(c: CanvasRenderingContext2D, points: number[][], fill: string) {
   c.fillStyle = fill;
   c.beginPath();
@@ -143,19 +143,95 @@ export function draw(c: CanvasRenderingContext2D, s: GameState) {
     c.textAlign = 'center';
     c.fillText('LA VETTA', 245, top - 58);
   }
+  for (const ledge of LEDGES) {
+    const y = ledge.y - cam;
+    if (y < -130 || y > HEIGHT + 30) continue;
+    const active = shelter(s)?.id === ledge.id;
+    c.fillStyle = active ? '#a9db9838' : '#203e3526';
+    c.fillRect(ledge.x + 20, y + 25, ledge.width - 40, 90);
+    polygon(
+      c,
+      [
+        [ledge.x, y],
+        [ledge.x + ledge.width, y - 5],
+        [ledge.x + ledge.width + 9, y + 8],
+        [ledge.x + ledge.width - 8, y + 24],
+        [ledge.x + 14, y + 21],
+        [ledge.x - 6, y + 10],
+      ],
+      '#293f39',
+    );
+    polygon(
+      c,
+      [
+        [ledge.x, y],
+        [ledge.x + ledge.width, y - 5],
+        [ledge.x + ledge.width + 9, y + 8],
+        [ledge.x + 7, y + 10],
+      ],
+      '#b0b49a',
+    );
+    c.fillStyle = active ? '#eff8d8' : '#d8e7c6';
+    c.font = 'bold 10px Arial';
+    c.textAlign = 'center';
+    c.fillText(
+      s.recoveredLedges.includes(ledge.id) ? 'RIPARO' : 'SOSTA + ♥',
+      ledge.x + ledge.width / 2,
+      y + 40,
+    );
+    if (active && s.rest > 0 && !s.recoveredLedges.includes(ledge.id) && s.lives < 3) {
+      c.fillStyle = '#1a332c';
+      c.fillRect(ledge.x + 25, y + 100, ledge.width - 50, 5);
+      c.fillStyle = '#c3e493';
+      c.fillRect(ledge.x + 25, y + 100, ((ledge.width - 50) * s.rest) / 3, 5);
+    }
+  }
   for (const rock of s.rocks) {
     if (rock.age < 0.8) {
       const y = Math.max(24, rock.y - cam + 28);
-      c.fillStyle = '#ffcb65';
+      c.fillStyle = rock.kind === 'ice' ? '#b5f0ff' : '#ffcb65';
       c.font = 'bold 25px Arial';
       c.textAlign = 'center';
-      c.fillText('!', rock.x, y);
+      c.fillText(rock.kind === 'ice' ? '❄' : '!', rock.x, y);
       continue;
     }
     c.save();
     c.translate(rock.x, rock.y - cam);
     c.rotate(rock.spin);
     const r = rock.radius;
+    if (rock.kind === 'ice') {
+      polygon(
+        c,
+        [
+          [0, -r * 1.3],
+          [r * 0.8, -r * 0.4],
+          [r * 0.55, r],
+          [0, r * 1.35],
+          [-r * 0.8, r * 0.1],
+          [-r * 0.5, -r],
+        ],
+        '#a6e1f3',
+      );
+      polygon(
+        c,
+        [
+          [0, -r * 1.3],
+          [r * 0.8, -r * 0.4],
+          [0, r * 1.35],
+          [-r * 0.15, 0],
+        ],
+        '#e9fbff',
+      );
+      c.strokeStyle = '#4facc9';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(0, -r);
+      c.lineTo(-r * 0.15, 0);
+      c.lineTo(r * 0.4, r * 0.5);
+      c.stroke();
+      c.restore();
+      continue;
+    }
     polygon(
       c,
       [
