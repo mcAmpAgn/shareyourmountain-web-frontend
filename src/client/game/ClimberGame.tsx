@@ -174,8 +174,7 @@ export default function ClimberGame({ suspended = false }: { suspended?: boolean
         <section className="climb-intro">
           <p className="climb-eyebrow">UN PICCOLO GIOCO. UNA GRANDE SALITA.</p>
           <h1 aria-label="Verso la vetta">
-            Verso
-            <br />
+            Verso <br />
             la vetta<span>.</span>
           </h1>
           <p>
