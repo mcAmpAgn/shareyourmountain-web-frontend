@@ -1,3 +1,4 @@
+import { referenceEditorPath, referenceEditorHTTP } from '../../core/reference-editor-http.js';
 import { createRouteEditor } from '../../core/route-editor.js';
 import { sqliteQueries } from '../db/query-adapter.js';
 import express, { type RequestHandler, type ErrorRequestHandler } from 'express';
@@ -91,6 +92,23 @@ export function createApp(db: AppDatabase, galleryConfig: InstagramGalleryConfig
     res.json({ items: await catalog.map(query.bbox, query.minElevation), limit: 1000 });
   });
   app.use('/api/editor', localProfileOnly);
+  app.use('/api/editor', async (req, res, next) => {
+    if (!referenceEditorPath.test(req.originalUrl.split('?')[0])) return next();
+    const result = await referenceEditorHTTP(
+      sqliteQueries(db),
+      req.originalUrl.split('?')[0],
+      req.method,
+      req.query,
+      async () => {
+        if (!req.is('application/json'))
+          throw new ApplicationError(415, 'È richiesta una richiesta JSON.');
+        return req.body;
+      },
+      req.get('If-Match'),
+    );
+    if (result.etag) res.setHeader('ETag', result.etag);
+    res.status(result.status).json(result.body);
+  });
   const editor = createRouteEditor(sqliteQueries(db));
   app.get('/api/editor/routes/:id', async (req, res) => {
     const result = await editor.get(validation.catalogId.parse(req.params.id));

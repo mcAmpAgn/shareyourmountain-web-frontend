@@ -1,3 +1,4 @@
+import { editorETag } from './editor-version.js';
 import type { EditableRoute } from '../shared/contracts.js';
 import { z } from 'zod';
 import type { SqlDatabase, SqlValue } from './sql.js';
@@ -39,22 +40,13 @@ const selection =
     .map(([key, col]) => col + ' AS ' + key)
     .join(',') +
   ',route_dateMod AS updatedAt';
-async function etag(route: EditableRoute) {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(JSON.stringify(route)),
-  );
-  return (
-    '"' + Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('') + '"'
-  );
-}
 export function createRouteEditor(db: SqlDatabase) {
   async function get(id: number) {
     const route = (await db
       .prepare('SELECT ' + selection + ' FROM route WHERE id=? AND route_status=1')
       .get(id)) as EditableRoute | undefined;
     if (!route) throw new ApplicationError(404, 'Itinerario non disponibile.');
-    return { route, etag: await etag(route) };
+    return { route, etag: await editorETag(route) };
   }
   return {
     get,

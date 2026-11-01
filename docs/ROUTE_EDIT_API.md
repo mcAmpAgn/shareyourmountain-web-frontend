@@ -1,6 +1,6 @@
 # Route editing API
 
-The edit API covers existing **active routes**, including `/routes/172` (Pizzo Badile - via Molteni). It does not add a browser edit form, create/delete records, change publication status, edit mountains or change sources/images. Public read endpoints remain unchanged.
+The edit API covers existing **active routes**, including `/routes/172` (Pizzo Badile - via Molteni). It does not add a browser edit form, create/delete records, change publication status, edit mountains or change images. Source and route-reference editing is available through the separate [reference API](REFERENCE_EDIT_API.md). Public read endpoints remain unchanged.
 
 ## Endpoints
 

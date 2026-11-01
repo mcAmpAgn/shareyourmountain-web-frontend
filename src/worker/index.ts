@@ -1,3 +1,4 @@
+import { referenceEditorPath, referenceEditorHTTP } from '../core/reference-editor-http.js';
 import { createRouteEditor } from '../core/route-editor.js';
 import { ZodError } from 'zod';
 import { createPublicCache } from './public-cache.js';
@@ -91,14 +92,28 @@ export function createWorker(verifyIdentity: IdentityVerifier = verifyAccessIden
         if ([...url.searchParams.keys()].some((key) => url.searchParams.getAll(key).length > 1))
           throw new ApplicationError(400, 'Parametri duplicati non validi.');
         const editorPath = path.match(/^\/api\/editor\/routes\/([^/]+)$/);
-        if (editorPath) {
+        if (editorPath || referenceEditorPath.test(path)) {
           if (!env.ACCESS_EDITOR_AUD || env.ACCESS_EDITOR_AUD === env.ACCESS_AUD)
             throw new ApplicationError(
               503,
               'Configura un’applicazione Access dedicata agli editor del catalogo.',
             );
           await verifyIdentity(request, { ...env, ACCESS_AUD: env.ACCESS_EDITOR_AUD });
-          const id = validation.catalogId.parse(editorPath[1]),
+          if (referenceEditorPath.test(path)) {
+            if (!['GET', 'HEAD'].includes(method)) sameOrigin(request);
+            const result = await referenceEditorHTTP(
+              d1Queries(env.DB),
+              path,
+              method,
+              query,
+              () => readJSON(request),
+              request.headers.get('If-Match'),
+            );
+            const response = json(result.body, result.status);
+            if (result.etag) response.headers.set('ETag', result.etag);
+            return response;
+          }
+          const id = validation.catalogId.parse(editorPath![1]),
             editor = createRouteEditor(d1Queries(env.DB));
           let result;
           if (method === 'GET') result = await editor.get(id);

@@ -142,3 +142,22 @@ export interface EditableRoute {
   longitude: number | null;
   updatedAt: string | null;
 }
+
+export interface EditableSource {
+  id: number;
+  name: string;
+  url: string | null;
+  logo: string | null;
+  createdAt: string;
+}
+export interface EditableRouteWebinfo {
+  id: number;
+  routeId: number;
+  sourceId: number | null;
+  url: string;
+  summary: string | null;
+  rate: string | null;
+  languageCode: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}
