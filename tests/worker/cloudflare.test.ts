@@ -16,6 +16,7 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       bindings: {
         ACCESS_TEAM_DOMAIN: 'https://fixture.cloudflareaccess.com',
         ACCESS_AUD: 'fixture-audience',
+        ACCESS_EDITOR_AUD: 'editor-audience',
         ACCESS_LOGIN_PROVIDER: 'google',
       },
       outboundService: async (request) =>
@@ -192,6 +193,54 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
+    assert.equal((await call('/api/editor/routes/2', alice)).status, 401);
+    assert.equal((await call('/api/editor/routes/2', 'forged')).status, 401);
+    const editorToken = await token('editor', 'editor-audience');
+    const editable = await call('/api/editor/routes/2', editorToken);
+    assert.equal(editable.status, 200);
+    assert.equal(editable.headers.get('Cache-Control'), 'no-store');
+    const editorEtag = editable.headers.get('ETag')!;
+    const editRoute = (body: unknown, origin = 'https://example.test', tag = editorEtag) =>
+      mf.dispatchFetch('https://example.test/api/editor/routes/2', {
+        method: 'PATCH',
+        headers: {
+          Origin: origin,
+          'Cf-Access-Jwt-Assertion': editorToken,
+          'Content-Type': 'application/json',
+          'If-Match': tag,
+        },
+        body: JSON.stringify(body),
+      });
+    assert.equal((await editRoute({ lengthM: 250 }, 'https://evil.test')).status, 403);
+    assert.equal((await editRoute({ owner: 'anyone' })).status, 400);
+    const savedEdit = await editRoute({ lengthM: 250 });
+    assert.equal(savedEdit.status, 200);
+    assert.equal(((await savedEdit.json()) as { lengthM: number }).lengthM, 250);
+    assert.equal((await editRoute({ lengthM: 260 })).status, 412);
+    assert.equal((await call('/api/editor/routes/999', editorToken)).status, 404);
+    const freshEditorRead = await call('/api/editor/routes/2', editorToken);
+    const renamed = await editRoute(
+      { title: 'Verified editor rename' },
+      'https://example.test',
+      freshEditorRead.headers.get('ETag')!,
+    );
+    assert.equal(renamed.status, 200);
+    assert.equal(
+      (
+        await binding
+          .prepare(
+            "SELECT name FROM catalog_search WHERE rowid=(SELECT search_rowid FROM catalog_search_keys WHERE entity_key='r-2')",
+          )
+          .first<{ name: string }>()
+      )?.name,
+      'Verified editor rename',
+    );
+    // Restore the fixture title for later identity and export checks.
+    await editRoute(
+      { title: 'Cervino - Cresta' },
+      'https://example.test',
+      renamed.headers.get('ETag')!,
+    );
     assert.equal((await call('/api/me/adventures', 'forged')).status, 401);
     assert.equal(
       (await call('/api/me/adventures', await token('alice', 'other-audience'))).status,

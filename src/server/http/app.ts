@@ -1,3 +1,5 @@
+import { createRouteEditor } from '../../core/route-editor.js';
+import { sqliteQueries } from '../db/query-adapter.js';
 import express, { type RequestHandler, type ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
 import type { AppDatabase } from '../db/connection.js';
@@ -87,6 +89,24 @@ export function createApp(db: AppDatabase, galleryConfig: InstagramGalleryConfig
   app.get('/api/map/mountains', async (req, res) => {
     const query = validation.mapQuery.parse(req.query);
     res.json({ items: await catalog.map(query.bbox, query.minElevation), limit: 1000 });
+  });
+  app.use('/api/editor', localProfileOnly);
+  const editor = createRouteEditor(sqliteQueries(db));
+  app.get('/api/editor/routes/:id', async (req, res) => {
+    const result = await editor.get(validation.catalogId.parse(req.params.id));
+    res.setHeader('ETag', result.etag);
+    res.json(result.route);
+  });
+  app.patch('/api/editor/routes/:id', async (req, res) => {
+    if (!req.is('application/json'))
+      throw new ApplicationError(415, 'È richiesta una richiesta JSON.');
+    const result = await editor.patch(
+      validation.catalogId.parse(req.params.id),
+      req.body,
+      req.get('If-Match'),
+    );
+    res.setHeader('ETag', result.etag);
+    res.json(result.route);
   });
   app.use('/api/me', localProfileOnly);
   app.get('/api/me/adventures', async (_req, res) => res.json(await adventures.list()));

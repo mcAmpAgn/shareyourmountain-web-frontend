@@ -126,3 +126,19 @@ export interface AdventureUpdate {
   status?: 'planned' | 'completed';
   notes?: string;
 }
+
+export interface EditableRoute {
+  id: number;
+  name: string | null;
+  title: string | null;
+  area: string | null;
+  activityId: number | null;
+  difficultyRaw: string | null;
+  elevationM: number | null;
+  lengthM: number | null;
+  heightM: number | null;
+  lengthDescription: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  updatedAt: string | null;
+}
