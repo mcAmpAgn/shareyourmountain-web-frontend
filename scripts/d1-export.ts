@@ -62,6 +62,7 @@ export function exportD1Catalog(db: Database.Database) {
         body,
         `INSERT INTO import_batches(sha256,snapshot,imported_at,report_json) VALUES (${sqlValue(sha256)},${sqlValue(metadata.snapshot)},${sqlValue(new Date().toISOString())},${sqlValue(JSON.stringify({ counts, snapshot: metadata.snapshot, sha256 }))});`,
         "INSERT INTO catalog_search(entity_key,name,location) SELECT key,name,range_name||' '||region_name||' '||countries FROM catalog_items WHERE active=1;",
+        'INSERT INTO catalog_search_keys(entity_key,search_rowid) SELECT entity_key,rowid FROM catalog_search;',
         'PRAGMA defer_foreign_keys=OFF;',
       ].join('\n') + '\n';
     return { sql, counts, sha256, snapshot: metadata.snapshot };

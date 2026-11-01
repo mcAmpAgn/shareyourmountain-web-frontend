@@ -126,3 +126,38 @@ export interface AdventureUpdate {
   status?: 'planned' | 'completed';
   notes?: string;
 }
+
+export interface EditableRoute {
+  id: number;
+  name: string | null;
+  title: string | null;
+  area: string | null;
+  activityId: number | null;
+  difficultyRaw: string | null;
+  elevationM: number | null;
+  lengthM: number | null;
+  heightM: number | null;
+  lengthDescription: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  updatedAt: string | null;
+}
+
+export interface EditableSource {
+  id: number;
+  name: string;
+  url: string | null;
+  logo: string | null;
+  createdAt: string;
+}
+export interface EditableRouteWebinfo {
+  id: number;
+  routeId: number;
+  sourceId: number | null;
+  url: string;
+  summary: string | null;
+  rate: string | null;
+  languageCode: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}

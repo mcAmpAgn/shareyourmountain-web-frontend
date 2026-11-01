@@ -12,3 +12,6 @@
 # INSTAGRAM_USER_ID=replace-with-numeric-professional-user-id
 # INSTAGRAM_API_VERSION=replace-with-supported-version
 # INSTAGRAM_MOUNTAIN_HASHTAGS={"10":"replace-with-numeric-hashtag-id"}
+
+# Optional separate Access application restricted to catalog editors.
+# ACCESS_EDITOR_AUD=editor-application-audience

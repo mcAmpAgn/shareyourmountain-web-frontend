@@ -186,6 +186,9 @@ export function importCatalog(
     db.sqlite.exec(
       "INSERT INTO catalog_search(entity_key,name,location) SELECT key,name,range_name||' '||region_name||' '||countries FROM catalog_items WHERE active=1",
     );
+    db.sqlite.exec(
+      'INSERT INTO catalog_search_keys(entity_key,search_rowid) SELECT entity_key,rowid FROM catalog_search',
+    );
     const insertIssue = db.sqlite.prepare(
       'INSERT INTO import_issues(batch_id,table_name,record_id,field,reason,original_value) VALUES (?,?,?,?,?,?)',
     );

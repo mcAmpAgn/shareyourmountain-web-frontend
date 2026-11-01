@@ -16,6 +16,7 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
       bindings: {
         ACCESS_TEAM_DOMAIN: 'https://fixture.cloudflareaccess.com',
         ACCESS_AUD: 'fixture-audience',
+        ACCESS_EDITOR_AUD: 'editor-audience',
         ACCESS_LOGIN_PROVIDER: 'google',
       },
       outboundService: async (request) =>
@@ -192,6 +193,131 @@ test('Worker bundle runs against real local D1, enforces Access identities and i
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
+    assert.equal((await call('/api/editor/routes/2', alice)).status, 401);
+    assert.equal((await call('/api/editor/routes/2', 'forged')).status, 401);
+    const editorToken = await token('editor', 'editor-audience');
+    const editable = await call('/api/editor/routes/2', editorToken);
+    assert.equal(editable.status, 200);
+    assert.equal(editable.headers.get('Cache-Control'), 'no-store');
+    const editorEtag = editable.headers.get('ETag')!;
+    const editRoute = (body: unknown, origin = 'https://example.test', tag = editorEtag) =>
+      mf.dispatchFetch('https://example.test/api/editor/routes/2', {
+        method: 'PATCH',
+        headers: {
+          Origin: origin,
+          'Cf-Access-Jwt-Assertion': editorToken,
+          'Content-Type': 'application/json',
+          'If-Match': tag,
+        },
+        body: JSON.stringify(body),
+      });
+    assert.equal((await editRoute({ lengthM: 250 }, 'https://evil.test')).status, 403);
+    assert.equal((await editRoute({ owner: 'anyone' })).status, 400);
+    const savedEdit = await editRoute({ lengthM: 250 });
+    assert.equal(savedEdit.status, 200);
+    assert.equal(((await savedEdit.json()) as { lengthM: number }).lengthM, 250);
+    assert.equal((await editRoute({ lengthM: 260 })).status, 412);
+    assert.equal((await call('/api/editor/routes/999', editorToken)).status, 404);
+    const freshEditorRead = await call('/api/editor/routes/2', editorToken);
+    const renamed = await editRoute(
+      { title: 'Verified editor rename' },
+      'https://example.test',
+      freshEditorRead.headers.get('ETag')!,
+    );
+    assert.equal(renamed.status, 200);
+    assert.equal(
+      (
+        await binding
+          .prepare(
+            "SELECT name FROM catalog_search WHERE rowid=(SELECT search_rowid FROM catalog_search_keys WHERE entity_key='r-2')",
+          )
+          .first<{ name: string }>()
+      )?.name,
+      'Verified editor rename',
+    );
+    // Restore the fixture title for later identity and export checks.
+    await editRoute(
+      { title: 'Cervino - Cresta' },
+      'https://example.test',
+      renamed.headers.get('ETag')!,
+    );
+    // Reference editors share the editor-only JWT boundary and execute real D1 writes.
+    for (const endpoint of ['/api/editor/sources', '/api/editor/routes/2/webinfo']) {
+      assert.equal((await call(endpoint, alice)).status, 401);
+      assert.equal((await call(endpoint, 'forged')).status, 401);
+      assert.equal(
+        (await call(endpoint, editorToken, 'POST', { name: 'Blocked' }, 'https://evil.test'))
+          .status,
+        403,
+      );
+    }
+    const sourceResponse = await call('/api/editor/sources', editorToken, 'POST', {
+      name: 'D1 reference',
+      url: 'https://d1.example/',
+    });
+    assert.equal(sourceResponse.status, 201, await sourceResponse.clone().text());
+    assert.equal(sourceResponse.headers.get('Cache-Control'), 'no-store');
+    const reference = (await sourceResponse.json()) as { id: number };
+    const patchReference = (endpoint: string, body: unknown, tag: string) =>
+      mf.dispatchFetch('https://example.test' + endpoint, {
+        method: 'PATCH',
+        headers: {
+          Origin: 'https://example.test',
+          'Cf-Access-Jwt-Assertion': editorToken,
+          'Content-Type': 'application/json',
+          'If-Match': tag,
+        },
+        body: JSON.stringify(body),
+      });
+    const sourceEndpoint = '/api/editor/sources/' + reference.id;
+    assert.equal(
+      (
+        await patchReference(
+          sourceEndpoint,
+          { name: 'D1 source edited' },
+          sourceResponse.headers.get('ETag')!,
+        )
+      ).status,
+      200,
+    );
+    assert.equal(
+      (await patchReference(sourceEndpoint, { name: 'Stale' }, sourceResponse.headers.get('ETag')!))
+        .status,
+      412,
+    );
+    const webResponse = await call('/api/editor/routes/2/webinfo', editorToken, 'POST', {
+      sourceId: reference.id,
+      url: 'https://d1.example/route',
+      languageCode: 'it',
+    });
+    assert.equal(webResponse.status, 201, await webResponse.clone().text());
+    const webReference = (await webResponse.json()) as { id: number };
+    const webEndpoint = '/api/editor/routes/2/webinfo/' + webReference.id;
+    assert.equal(
+      (
+        await patchReference(
+          webEndpoint,
+          { summary: 'D1 amended' },
+          webResponse.headers.get('ETag')!,
+        )
+      ).status,
+      200,
+    );
+    assert.equal(
+      (await patchReference(webEndpoint, { summary: 'Stale' }, webResponse.headers.get('ETag')!))
+        .status,
+      412,
+    );
+    assert.equal(
+      (await call('/api/editor/routes/1/webinfo/' + webReference.id, editorToken)).status,
+      404,
+    );
+    assert.equal((await call('/api/editor/sources?q=D1', editorToken)).status, 200);
+    const storedReference = await binding
+      .prepare('SELECT wi_summary FROM route_webinfo WHERE id=?')
+      .bind(webReference.id)
+      .first<{ wi_summary: string }>();
+    assert.equal(storedReference?.wi_summary, 'D1 amended');
     assert.equal((await call('/api/me/adventures', 'forged')).status, 401);
     assert.equal(
       (await call('/api/me/adventures', await token('alice', 'other-audience'))).status,
